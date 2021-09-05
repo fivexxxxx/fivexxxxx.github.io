@@ -20,19 +20,20 @@
     var CONFIG = {"hostname":"fivexxxxx.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false,"b2t":false,"scollpercent":true},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
   </script>
 
-  <meta name="description" content="把酒长亭杯已空,行人车马各西东。 枫林不共斜阳去,自向荒郊寂寞红。">
-<meta property="og:type" content="website">
-<meta property="og:title" content="文章分类">
-<meta property="og:url" content="https://fivexxxxx.github.io/categories/index.html">
+  <meta name="description" content="基于Next主题实现只显示部分文章只需要插入 &lt;!--more--&gt;  首页只会显示标记以前的内容，标记后的内容可以通过阅读更多查阅。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="续篇--Hexo博客文章预览功能">
+<meta property="og:url" content="https://fivexxxxx.github.io/2021/09/05/Hexo%E5%8D%9A%E5%AE%A2%E6%96%87%E7%AB%A0%E9%A2%84%E8%A7%88%E5%8A%9F%E8%83%BD/index.html">
 <meta property="og:site_name" content="Armoon的一亩三分自留地">
-<meta property="og:description" content="把酒长亭杯已空,行人车马各西东。 枫林不共斜阳去,自向荒郊寂寞红。">
+<meta property="og:description" content="基于Next主题实现只显示部分文章只需要插入 &lt;!--more--&gt;  首页只会显示标记以前的内容，标记后的内容可以通过阅读更多查阅。">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2021-09-03T07:53:12.000Z">
-<meta property="article:modified_time" content="2021-09-05T01:56:42.978Z">
+<meta property="article:published_time" content="2021-09-05T07:31:35.153Z">
+<meta property="article:modified_time" content="2021-09-05T07:35:17.436Z">
 <meta property="article:author" content="Armoon">
+<meta property="article:tag" content="博客">
 <meta name="twitter:card" content="summary">
 
-<link rel="canonical" href="https://fivexxxxx.github.io/categories/">
+<link rel="canonical" href="https://fivexxxxx.github.io/2021/09/05/Hexo%E5%8D%9A%E5%AE%A2%E6%96%87%E7%AB%A0%E9%A2%84%E8%A7%88%E5%8A%9F%E8%83%BD/">
 
 
 <script id="page-configurations">
@@ -40,13 +41,12 @@
   CONFIG.page = {
     sidebar: "",
     isHome : false,
-    isPost : false,
+    isPost : true,
     lang   : 'zh-CN'
   };
 </script>
 
-  <title>文章分类 | Armoon的一亩三分自留地
-</title>
+  <title>续篇--Hexo博客文章预览功能 | Armoon的一亩三分自留地</title>
   
 
 
@@ -159,51 +159,95 @@
       <div class="main-inner">
         <div class="content-wrap">
           
-  
-  
 
-          <div class="content page posts-expand">
+          <div class="content post posts-expand">
             
 
     
-    
-    
-    <div class="post-block" lang="zh-CN">
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://fivexxxxx.github.io/2021/09/05/Hexo%E5%8D%9A%E5%AE%A2%E6%96%87%E7%AB%A0%E9%A2%84%E8%A7%88%E5%8A%9F%E8%83%BD/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Armoon">
+      <meta itemprop="description" content="把酒长亭杯已空,行人车马各西东。 枫林不共斜阳去,自向荒郊寂寞红。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Armoon的一亩三分自留地">
+    </span>
       <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          续篇--Hexo博客文章预览功能
+        </h1>
 
-<h1 class="post-title" itemprop="name headline">文章分类
-</h1>
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
 
-<div class="post-meta">
+              <time title="创建时间：2021-09-05 15:31:35 / 修改时间：15:35:17" itemprop="dateCreated datePublished" datetime="2021-09-05T15:31:35+08:00">2021-09-05</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Hexo/" itemprop="url" rel="index"><span itemprop="name">Hexo</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>基于Next主题实现只显示部分文章只需要插入</p>
+<pre><code>&lt;!--more--&gt;
+</code></pre>
+<p>首页只会显示标记以前的内容，标记后的内容可以通过阅读更多查阅。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%8D%9A%E5%AE%A2/" rel="tag"># 博客</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/09/05/Zlog%E7%A7%BB%E6%A4%8D%E5%88%B0AM335X%E5%BC%80%E5%8F%91%E6%9D%BF/" rel="prev" title="Zlog移植到AM335X开发板步骤">
+      <i class="fa fa-chevron-left"></i> Zlog移植到AM335X开发板步骤
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
   
 
-</div>
-
-</header>
-
-      
-      
-      
-      <div class="post-body">
-          <div class="category-all-page">
-            <div class="category-all-title">
-              目前共计 2 个分类
-            </div>
-            <div class="category-all">
-              <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Hexo/">Hexo</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/">嵌入式</a><span class="category-list-count">1</span></li></ul>
-            </div>
-          </div>
-        
-      </div>
-      
-      
-      
-    </div>
-    
-
-    
-    
-    
 
 
           </div>
