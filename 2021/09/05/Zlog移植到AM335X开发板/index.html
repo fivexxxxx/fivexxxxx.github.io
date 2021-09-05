@@ -20,17 +20,20 @@
     var CONFIG = {"hostname":"fivexxxxx.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false,"b2t":false,"scollpercent":true},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
   </script>
 
-  <meta name="description" content="把酒长亭杯已空,行人车马各西东。 枫林不共斜阳去,自向荒郊寂寞红。">
-<meta property="og:type" content="website">
-<meta property="og:title" content="Armoon的一亩三分自留地">
-<meta property="og:url" content="https://fivexxxxx.github.io/archives/2021/index.html">
+  <meta name="description" content="说明：Zlog是个开源的纯C日志库，详细介绍自己网上搜索了解。移植到ARM开板–335X的步骤和验证简单做个笔记。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Zlog移植到AM335X开发板步骤">
+<meta property="og:url" content="https://fivexxxxx.github.io/2021/09/05/Zlog%E7%A7%BB%E6%A4%8D%E5%88%B0AM335X%E5%BC%80%E5%8F%91%E6%9D%BF/index.html">
 <meta property="og:site_name" content="Armoon的一亩三分自留地">
-<meta property="og:description" content="把酒长亭杯已空,行人车马各西东。 枫林不共斜阳去,自向荒郊寂寞红。">
+<meta property="og:description" content="说明：Zlog是个开源的纯C日志库，详细介绍自己网上搜索了解。移植到ARM开板–335X的步骤和验证简单做个笔记。">
 <meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2021-09-05T06:50:54.379Z">
+<meta property="article:modified_time" content="2021-09-05T07:20:54.208Z">
 <meta property="article:author" content="Armoon">
+<meta property="article:tag" content="ARM">
 <meta name="twitter:card" content="summary">
 
-<link rel="canonical" href="https://fivexxxxx.github.io/archives/2021/">
+<link rel="canonical" href="https://fivexxxxx.github.io/2021/09/05/Zlog%E7%A7%BB%E6%A4%8D%E5%88%B0AM335X%E5%BC%80%E5%8F%91%E6%9D%BF/">
 
 
 <script id="page-configurations">
@@ -38,12 +41,12 @@
   CONFIG.page = {
     sidebar: "",
     isHome : false,
-    isPost : false,
+    isPost : true,
     lang   : 'zh-CN'
   };
 </script>
 
-  <title>归档 | Armoon的一亩三分自留地</title>
+  <title>Zlog移植到AM335X开发板步骤 | Armoon的一亩三分自留地</title>
   
 
 
@@ -157,90 +160,191 @@
         <div class="content-wrap">
           
 
-          <div class="content archive">
+          <div class="content post posts-expand">
             
 
+    
   
   
-  
-  <div class="post-block">
-    <div class="posts-collapse">
-      <div class="collection-title">
-        <span class="collection-header">嗯..! 目前共计 3 篇日志。 继续努力。</span>
-      </div>
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://fivexxxxx.github.io/2021/09/05/Zlog%E7%A7%BB%E6%A4%8D%E5%88%B0AM335X%E5%BC%80%E5%8F%91%E6%9D%BF/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Armoon">
+      <meta itemprop="description" content="把酒长亭杯已空,行人车马各西东。 枫林不共斜阳去,自向荒郊寂寞红。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Armoon的一亩三分自留地">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Zlog移植到AM335X开发板步骤
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2021-09-05 14:50:54 / 修改时间：15:20:54" itemprop="dateCreated datePublished" datetime="2021-09-05T14:50:54+08:00">2021-09-05</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/" itemprop="url" rel="index"><span itemprop="name">嵌入式</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
 
       
-    <div class="collection-year">
-      <span class="collection-header">2021</span>
+        <h2 id="说明："><a href="#说明：" class="headerlink" title="说明："></a>说明：</h2><p>Zlog是个开源的纯C日志库，详细介绍自己网上搜索了解。移植到ARM开板–335X的步骤和验证简单做个笔记。</p>
+<span id="more"></span>     
+
+<h2 id="准备工作："><a href="#准备工作：" class="headerlink" title="准备工作："></a>准备工作：</h2><p>下载：<br>Github上下载版本1.2.15，地址：</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://github.com/HardySimpson/zlog">https://github.com/HardySimpson/zlog</a></p>
+</blockquote>
+<p>移植过程：</p>
+<p>参考：<a target="_blank" rel="noopener" href="https://blog.csdn.net/lz_obj/article/details/78656181">https://blog.csdn.net/lz_obj/article/details/78656181</a></p>
+<p>宿主机Ubuntu上建立目录保存zlog的工程文件，步骤如下：</p>
+<blockquote>
+<p>   cd /home/</p>
+<p>   mkdir zlog</p>
+<p>   cd zlog/</p>
+<p>   mkdir armzlog</p>
+<p>   cd armzlog/</p>
+</blockquote>
+<p>复制本地上的zlog目录到/home/zlog/armzlog目录内：</p>
+<blockquote>
+<p>   cp -R /mnt/hgfs/vmshare/zlog-1.2.15/ ./</p>
+<p>   cd zlog-1.2.15/</p>
+</blockquote>
+<p>设置交叉编译用的编译器，根据自己宿主机的情况设置：</p>
+<blockquote>
+<p>   make CC=arm-none-linux-gnueabi-gcc</p>
+</blockquote>
+<p>指定编译后的安装目录，编译后的库文件在此路径下：</p>
+<blockquote>
+<p>   make PREFIX=/home/zlog/armzlog/ install</p>
+<p>   cd /home/zlog/</p>
+<p>   zip -ry armzlog.zip armzlog/*</p>
+</blockquote>
+<p>上面所有操作完毕后，打包zip是整个项目打包，可以不要这步操作,直接复制.so文件到指定目录也行。</p>
+<p>编译后的库文件如下：</p>
+<blockquote>
+<p>libzlog.a libzlog.so libzlog.so.1 libzlog.so.1.2</p>
+</blockquote>
+<p>把上面的库文件上传到开板，通过NFS方式，这样可以方便文件交换在ARM和Linux之间，具体配置方法参考网络上的其他笔记。</p>
+<p>在开发板上输入如下：</p>
+<blockquote>
+<p>mount -t nfs 192.168.35.42:/home/lin /mnt/nfs/ -o nolock</p>
+</blockquote>
+<p>在ubuntu系统上的home/lin目录下新建一个目录存放lib文件</p>
+<blockquote>
+<p>mkdir zlog_arm_lib</p>
+<p>cd zlog_arm_lib/</p>
+<p>cp /home/zlog/armzlog/lib/* ./</p>
+</blockquote>
+<p>再查看ARM板的目录：</p>
+<p>ARM上也新建一个目录，将NFS共享的文件夹中的4个库文件复制到新建目录里，要不开发板断电了每次要重新NFS一下：</p>
+<blockquote>
+<p>cd home/</p>
+<p>mkdir armzlog</p>
+<p>cd armzlog/</p>
+<p>mkdir lib</p>
+<p>cd lib/</p>
+<p>cp /mnt/nfs/zlog_arm_lib/* ./</p>
+<p>cp libzlog.so.1.2 /lib/</p>
+<p>cd /lib/</p>
+<p>ln -s libzlog.so.1.2 libzlog.so.1</p>
+<p>ln -s libzlog.so.1 libzlog.so</p>
+</blockquote>
+<h2 id="测试zlog："><a href="#测试zlog：" class="headerlink" title="测试zlog："></a>测试zlog：</h2><p>建立的工程为了可以在与开发板连接后单步调试，这里使用VS2019+VISUALGDB(该插件网络上搜索安装后即可)。</p>
+<p>建立工程的步骤省略，自行网络搜索参考一下即可。</p>
+<p>工程建立完成后，注意要指定库的目录和库名，具体如下所示：</p>
+<p>选择Makefiles settings项，填写包含目录和库名：</p>
+<blockquote>
+<p>include directories:/home/zlog/armzlog/include</p>
+<p>library directories:/home/zlog/armzlog/lib</p>
+<p>library names: pthread zlog</p>
+</blockquote>
+<p> 测试代码：</p>
+<pre><code>#include &lt;stdio.h&gt;
+
+#include &quot;zlog.h&quot;
+
+int main(int argc, char** argv)
+&#123;
+int rc;
+
+zlog_category_t* c;
+rc = zlog_init(&quot;/home/armzlog/test_hello.conf&quot;);
+if (rc)
+&#123;
+    printf(&quot;init failed\n&quot;);
+    return -1;
+&#125;
+c = zlog_get_category(&quot;my_cat&quot;);
+if (!c)
+&#123;
+    printf(&quot;get cat fail\n&quot;);
+    zlog_fini();
+    return -2;
+&#125;
+zlog_info(c, &quot;hello, zlog&quot;);
+zlog_fini();
+
+return 0;
+&#125;
+</code></pre>
+<p>代码中的test_hello.conf配置文件，放到开发板指定目录：/home/armzlog</p>
+<p>经过上面的折腾后，工程可以单步调试了…</p>
+<p>最后编译，运行即可。</p>
+
     </div>
 
-  <article itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
+    
+    
+    
 
-      <div class="post-meta">
-        <time itemprop="dateCreated"
-              datetime="2021-09-05T14:50:54+08:00"
-              content="2021-09-05">
-          09-05
-        </time>
-      </div>
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/ARM/" rel="tag"># ARM</a>
+          </div>
 
-      <div class="post-title">
-          <a class="post-title-link" href="/2021/09/05/Zlog%E7%A7%BB%E6%A4%8D%E5%88%B0AM335X%E5%BC%80%E5%8F%91%E6%9D%BF/" itemprop="url">
-            <span itemprop="name">Zlog移植到AM335X开发板步骤</span>
-          </a>
-      </div>
-
-    </header>
-  </article>
-
-  <article itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <div class="post-meta">
-        <time itemprop="dateCreated"
-              datetime="2021-09-05T14:29:21+08:00"
-              content="2021-09-05">
-          09-05
-        </time>
-      </div>
-
-      <div class="post-title">
-          <a class="post-title-link" href="/2021/09/05/hexo%E5%8D%9A%E5%AE%A2%E6%B7%BB%E5%8A%A0%E5%88%86%E7%B1%BB%E5%92%8C%E6%A0%87%E7%AD%BE/" itemprop="url">
-            <span itemprop="name">续篇--hexo博客添加分类和标签</span>
-          </a>
-      </div>
-
-    </header>
-  </article>
-
-  <article itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <div class="post-meta">
-        <time itemprop="dateCreated"
-              datetime="2021-09-02T18:17:37+08:00"
-              content="2021-09-02">
-          09-02
-        </time>
-      </div>
-
-      <div class="post-title">
-          <a class="post-title-link" href="/2021/09/02/%E5%BC%80%E7%AF%87/" itemprop="url">
-            <span itemprop="name">开篇--Hexo搭建个人博客笔记</span>
-          </a>
-      </div>
-
-    </header>
-  </article>
+        
 
 
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/09/05/hexo%E5%8D%9A%E5%AE%A2%E6%B7%BB%E5%8A%A0%E5%88%86%E7%B1%BB%E5%92%8C%E6%A0%87%E7%AD%BE/" rel="prev" title="续篇--hexo博客添加分类和标签">
+      <i class="fa fa-chevron-left"></i> 续篇--hexo博客添加分类和标签
+    </a></div>
+      <div class="post-nav-item"></div>
     </div>
-  </div>
+      </footer>
+    
+  </article>
   
   
-  
-
   
 
 
@@ -293,6 +397,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AF%B4%E6%98%8E%EF%BC%9A"><span class="nav-number">1.</span> <span class="nav-text">说明：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%87%86%E5%A4%87%E5%B7%A5%E4%BD%9C%EF%BC%9A"><span class="nav-number">2.</span> <span class="nav-text">准备工作：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B5%8B%E8%AF%95zlog%EF%BC%9A"><span class="nav-number">3.</span> <span class="nav-text">测试zlog：</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
