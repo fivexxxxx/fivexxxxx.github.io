@@ -20,22 +20,20 @@
     var CONFIG = {"hostname":"fivexxxxx.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false,"b2t":false,"scollpercent":true},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
   </script>
 
-  <meta name="description" content="说明：Zlog是个开源的纯C日志库，详细介绍自己网上搜索了解。移植到ARM开板–335X的步骤和验证简单做个笔记。">
+  <meta name="description" content="参考： https:&#x2F;&#x2F;www.jianshu.com&#x2F;p&#x2F;ea78bdd0551f&#x2F; 前言： 写篇笔记，发布后，发现图片都没有显示出来，挺郁闷。查一下参考上面链接地址，在本地用markdownPAD2尝试一下，发现编辑时，右侧预览没有显示出图片，以为有问题，hexo s 启动本地服务后测试一下，发现浏览器里可以显示图片。那么hexo d发布后也应该可以显示，尝试后果然可以。特记录一下… 修改博客">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Zlog移植到AM335X开发板步骤">
-<meta property="og:url" content="https://fivexxxxx.github.io/2021/09/05/Zlog%E7%A7%BB%E6%A4%8D%E5%88%B0AM335X%E5%BC%80%E5%8F%91%E6%9D%BF/index.html">
+<meta property="og:title" content="Hexo博客不显示图片的一种解决方法">
+<meta property="og:url" content="https://fivexxxxx.github.io/2021/09/26/Hexo%E5%8D%9A%E5%AE%A2%E4%B8%8D%E6%98%BE%E7%A4%BA%E5%9B%BE%E7%89%87%E7%9A%84%E4%B8%80%E7%A7%8D%E8%A7%A3%E5%86%B3%E6%96%B9%E6%B3%95/index.html">
 <meta property="og:site_name" content="Armoon的一亩三分自留地">
-<meta property="og:description" content="说明：Zlog是个开源的纯C日志库，详细介绍自己网上搜索了解。移植到ARM开板–335X的步骤和验证简单做个笔记。">
+<meta property="og:description" content="参考： https:&#x2F;&#x2F;www.jianshu.com&#x2F;p&#x2F;ea78bdd0551f&#x2F; 前言： 写篇笔记，发布后，发现图片都没有显示出来，挺郁闷。查一下参考上面链接地址，在本地用markdownPAD2尝试一下，发现编辑时，右侧预览没有显示出图片，以为有问题，hexo s 启动本地服务后测试一下，发现浏览器里可以显示图片。那么hexo d发布后也应该可以显示，尝试后果然可以。特记录一下… 修改博客">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2021-09-05T06:50:54.379Z">
-<meta property="article:modified_time" content="2021-09-05T12:19:19.053Z">
+<meta property="article:published_time" content="2021-09-26T08:40:17.429Z">
+<meta property="article:modified_time" content="2021-09-26T08:41:10.516Z">
 <meta property="article:author" content="Armoon">
-<meta property="article:tag" content="ARM">
-<meta property="article:tag" content="Zlog">
-<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="hexo">
 <meta name="twitter:card" content="summary">
 
-<link rel="canonical" href="https://fivexxxxx.github.io/2021/09/05/Zlog%E7%A7%BB%E6%A4%8D%E5%88%B0AM335X%E5%BC%80%E5%8F%91%E6%9D%BF/">
+<link rel="canonical" href="https://fivexxxxx.github.io/2021/09/26/Hexo%E5%8D%9A%E5%AE%A2%E4%B8%8D%E6%98%BE%E7%A4%BA%E5%9B%BE%E7%89%87%E7%9A%84%E4%B8%80%E7%A7%8D%E8%A7%A3%E5%86%B3%E6%96%B9%E6%B3%95/">
 
 
 <script id="page-configurations">
@@ -48,7 +46,7 @@
   };
 </script>
 
-  <title>Zlog移植到AM335X开发板步骤 | Armoon的一亩三分自留地</title>
+  <title>Hexo博客不显示图片的一种解决方法 | Armoon的一亩三分自留地</title>
   
 
 
@@ -169,7 +167,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://fivexxxxx.github.io/2021/09/05/Zlog%E7%A7%BB%E6%A4%8D%E5%88%B0AM335X%E5%BC%80%E5%8F%91%E6%9D%BF/">
+    <link itemprop="mainEntityOfPage" href="https://fivexxxxx.github.io/2021/09/26/Hexo%E5%8D%9A%E5%AE%A2%E4%B8%8D%E6%98%BE%E7%A4%BA%E5%9B%BE%E7%89%87%E7%9A%84%E4%B8%80%E7%A7%8D%E8%A7%A3%E5%86%B3%E6%96%B9%E6%B3%95/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.png">
@@ -182,7 +180,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          Zlog移植到AM335X开发板步骤
+          Hexo博客不显示图片的一种解决方法
         </h1>
 
         <div class="post-meta">
@@ -193,7 +191,7 @@
               <span class="post-meta-item-text">发表于</span>
               
 
-              <time title="创建时间：2021-09-05 14:50:54 / 修改时间：20:19:19" itemprop="dateCreated datePublished" datetime="2021-09-05T14:50:54+08:00">2021-09-05</time>
+              <time title="创建时间：2021-09-26 16:40:17 / 修改时间：16:41:10" itemprop="dateCreated datePublished" datetime="2021-09-26T16:40:17+08:00">2021-09-26</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -201,7 +199,7 @@
               </span>
               <span class="post-meta-item-text">分类于</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/" itemprop="url" rel="index"><span itemprop="name">嵌入式</span></a>
+                  <a href="/categories/hexo/" itemprop="url" rel="index"><span itemprop="name">hexo</span></a>
                 </span>
             </span>
 
@@ -223,109 +221,26 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <h2 id="说明："><a href="#说明：" class="headerlink" title="说明："></a>说明：</h2><p>Zlog是个开源的纯C日志库，详细介绍自己网上搜索了解。移植到ARM开板–335X的步骤和验证简单做个笔记。</p>
-<span id="more"></span>     
-
-<h2 id="准备工作："><a href="#准备工作：" class="headerlink" title="准备工作："></a>准备工作：</h2><p>下载：<br>Github上下载版本1.2.15，地址：</p>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://github.com/HardySimpson/zlog">https://github.com/HardySimpson/zlog</a></p>
-</blockquote>
-<p>移植过程：</p>
-<p>参考：<a target="_blank" rel="noopener" href="https://blog.csdn.net/lz_obj/article/details/78656181">https://blog.csdn.net/lz_obj/article/details/78656181</a></p>
-<p>宿主机Ubuntu上建立目录保存zlog的工程文件，步骤如下：</p>
-<blockquote>
-<p>   cd /home/</p>
-<p>   mkdir zlog</p>
-<p>   cd zlog/</p>
-<p>   mkdir armzlog</p>
-<p>   cd armzlog/</p>
-</blockquote>
-<p>复制本地上的zlog目录到/home/zlog/armzlog目录内：</p>
-<blockquote>
-<p>   cp -R /mnt/hgfs/vmshare/zlog-1.2.15/ ./</p>
-<p>   cd zlog-1.2.15/</p>
-</blockquote>
-<p>设置交叉编译用的编译器，根据自己宿主机的情况设置：</p>
-<blockquote>
-<p>   make CC=arm-none-linux-gnueabi-gcc</p>
-</blockquote>
-<p>指定编译后的安装目录，编译后的库文件在此路径下：</p>
-<blockquote>
-<p>   make PREFIX=/home/zlog/armzlog/ install</p>
-<p>   cd /home/zlog/</p>
-<p>   zip -ry armzlog.zip armzlog/*</p>
-</blockquote>
-<p>上面所有操作完毕后，打包zip是整个项目打包，可以不要这步操作,直接复制.so文件到指定目录也行。</p>
-<p>编译后的库文件如下：</p>
-<blockquote>
-<p>libzlog.a libzlog.so libzlog.so.1 libzlog.so.1.2</p>
-</blockquote>
-<p>把上面的库文件上传到开板，通过NFS方式，这样可以方便文件交换在ARM和Linux之间，具体配置方法参考网络上的其他笔记。</p>
-<p>在开发板上输入如下：</p>
-<blockquote>
-<p>mount -t nfs 192.168.35.42:/home/lin /mnt/nfs/ -o nolock</p>
-</blockquote>
-<p>在ubuntu系统上的home/lin目录下新建一个目录存放lib文件</p>
-<blockquote>
-<p>mkdir zlog_arm_lib</p>
-<p>cd zlog_arm_lib/</p>
-<p>cp /home/zlog/armzlog/lib/* ./</p>
-</blockquote>
-<p>再查看ARM板的目录：</p>
-<p>ARM上也新建一个目录，将NFS共享的文件夹中的4个库文件复制到新建目录里，要不开发板断电了每次要重新NFS一下：</p>
-<blockquote>
-<p>cd home/</p>
-<p>mkdir armzlog</p>
-<p>cd armzlog/</p>
-<p>mkdir lib</p>
-<p>cd lib/</p>
-<p>cp /mnt/nfs/zlog_arm_lib/* ./</p>
-<p>cp libzlog.so.1.2 /lib/</p>
-<p>cd /lib/</p>
-<p>ln -s libzlog.so.1.2 libzlog.so.1</p>
-<p>ln -s libzlog.so.1 libzlog.so</p>
-</blockquote>
-<h2 id="测试zlog："><a href="#测试zlog：" class="headerlink" title="测试zlog："></a>测试zlog：</h2><p>建立的工程为了可以在与开发板连接后单步调试，这里使用VS2019+VISUALGDB(该插件网络上搜索安装后即可)。</p>
-<p>建立工程的步骤省略，自行网络搜索参考一下即可。</p>
-<p>工程建立完成后，注意要指定库的目录和库名，具体如下所示：</p>
-<p>选择Makefiles settings项，填写包含目录和库名：</p>
-<blockquote>
-<p>include directories:/home/zlog/armzlog/include</p>
-<p>library directories:/home/zlog/armzlog/lib</p>
-<p>library names: pthread zlog</p>
-</blockquote>
-<p> 测试代码：</p>
-<pre><code>#include &lt;stdio.h&gt;
-
-#include &quot;zlog.h&quot;
-
-int main(int argc, char** argv)
-&#123;
-int rc;
-
-zlog_category_t* c;
-rc = zlog_init(&quot;/home/armzlog/test_hello.conf&quot;);
-if (rc)
-&#123;
-    printf(&quot;init failed\n&quot;);
-    return -1;
-&#125;
-c = zlog_get_category(&quot;my_cat&quot;);
-if (!c)
-&#123;
-    printf(&quot;get cat fail\n&quot;);
-    zlog_fini();
-    return -2;
-&#125;
-zlog_info(c, &quot;hello, zlog&quot;);
-zlog_fini();
-
-return 0;
-&#125;
+        <p>参考：</p>
+<p><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/ea78bdd0551f/">https://www.jianshu.com/p/ea78bdd0551f/</a></p>
+<p>前言：</p>
+<p>写篇笔记，发布后，发现图片都没有显示出来，挺郁闷。查一下参考上面链接地址，在本地用markdownPAD2尝试一下，发现编辑时，右侧预览没有显示出图片，以为有问题，hexo s 启动本地服务后测试一下，发现浏览器里可以显示图片。那么hexo d发布后也应该可以显示，尝试后果然可以。<br>特记录一下…</p>
+<p>修改博客配置</p>
+<p>修改博客根目录中_config.yml文件的配置项post_asset_folder为true：</p>
+<pre><code>post_asset_folder: true
 </code></pre>
-<p>代码中的test_hello.conf配置文件，放到开发板指定目录：/home/armzlog</p>
-<p>经过上面的折腾后，工程可以单步调试了…</p>
-<p>最后编译，运行即可。</p>
+<p>完成此设置后，当你通过hexo new 文件名新建博客后，会产生一个和文件同名的文件夹。</p>
+<pre><code>hexo new 文件名
+</code></pre>
+<p>下载插件</p>
+<p>在博客根目录中下使用npm安装插件：</p>
+<pre><code>npm install https://github.com/CodeFalling/hexo-asset-image --save
+</code></pre>
+<p>示例</p>
+<p>当文章需要添加图片时，将需要添加的图片放入同名的文件夹中，同时通过相对路径索引到该图片。</p>
+<pre><code>![](./stm32103c8t6实现USB虚拟串口笔记/usb1.png)
+</code></pre>
+<p>经过上述操作后，即可在发表文章后显示图片啦…</p>
 
     </div>
 
@@ -335,9 +250,7 @@ return 0;
 
       <footer class="post-footer">
           <div class="post-tags">
-              <a href="/tags/ARM/" rel="tag"># ARM</a>
-              <a href="/tags/Zlog/" rel="tag"># Zlog</a>
-              <a href="/tags/Linux/" rel="tag"># Linux</a>
+              <a href="/tags/hexo/" rel="tag"># hexo</a>
           </div>
 
         
@@ -346,13 +259,10 @@ return 0;
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2021/09/05/hexo%E5%8D%9A%E5%AE%A2%E6%B7%BB%E5%8A%A0%E5%88%86%E7%B1%BB%E5%92%8C%E6%A0%87%E7%AD%BE/" rel="prev" title="续篇--hexo博客添加分类和标签">
-      <i class="fa fa-chevron-left"></i> 续篇--hexo博客添加分类和标签
+    <a href="/2021/09/26/stm32103c8t6%E5%AE%9E%E7%8E%B0USB%E8%99%9A%E6%8B%9F%E4%B8%B2%E5%8F%A3%E7%AC%94%E8%AE%B0/" rel="prev" title="stm32 103c8t6实现USB虚拟串口笔记">
+      <i class="fa fa-chevron-left"></i> stm32 103c8t6实现USB虚拟串口笔记
     </a></div>
-      <div class="post-nav-item">
-    <a href="/2021/09/05/Hexo%E5%8D%9A%E5%AE%A2%E6%96%87%E7%AB%A0%E9%A2%84%E8%A7%88%E5%8A%9F%E8%83%BD/" rel="next" title="续篇--Hexo博客文章预览功能">
-      续篇--Hexo博客文章预览功能 <i class="fa fa-chevron-right"></i>
-    </a></div>
+      <div class="post-nav-item"></div>
     </div>
       </footer>
     
@@ -411,7 +321,6 @@ return 0;
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AF%B4%E6%98%8E%EF%BC%9A"><span class="nav-number">1.</span> <span class="nav-text">说明：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%87%86%E5%A4%87%E5%B7%A5%E4%BD%9C%EF%BC%9A"><span class="nav-number">2.</span> <span class="nav-text">准备工作：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B5%8B%E8%AF%95zlog%EF%BC%9A"><span class="nav-number">3.</span> <span class="nav-text">测试zlog：</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
