@@ -123,17 +123,17 @@
   </li>
         <li class="menu-item menu-item-tags">
 
-    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签<span class="badge">14</span></a>
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签<span class="badge">17</span></a>
 
   </li>
         <li class="menu-item menu-item-categories">
 
-    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类<span class="badge">5</span></a>
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类<span class="badge">6</span></a>
 
   </li>
         <li class="menu-item menu-item-archives">
 
-    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档<span class="badge">8</span></a>
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档<span class="badge">9</span></a>
 
   </li>
   </ul>
@@ -159,6 +159,84 @@
 
           <div class="content index posts-expand">
             
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://fivexxxxx.github.io/2021/09/26/stm32-usb/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Armoon">
+      <meta itemprop="description" content="把酒长亭杯已空,行人车马各西东。 枫林不共斜阳去,自向荒郊寂寞红。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Armoon的一亩三分自留地">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2021/09/26/stm32-usb/" class="post-title-link" itemprop="url">stm32 103c8t6实现USB虚拟串口笔记</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2021-09-26 14:53:50 / 修改时间：16:00:51" itemprop="dateCreated datePublished" datetime="2021-09-26T14:53:50+08:00">2021-09-26</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/stm32/" itemprop="url" rel="index"><span itemprop="name">stm32</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>参考：<br><a target="_blank" rel="noopener" href="https://blog.csdn.net/vonlycn/article/details/103280073">https://blog.csdn.net/vonlycn/article/details/103280073</a></p>
+<h1 id="前言："><a href="#前言：" class="headerlink" title="前言："></a>前言：</h1><p>以前有块STM32的板子，想试试HAL库的功能，经典的点灯程序试验完毕。再搞个串口试验想，通过CUBEMX配置后，简单测试后发现从STM32串口乱码，即从STM32串口发送出来的数据，在PC端的串口调试助手一直乱码。</p>
+<p>网络搜索一下，有说是板子晶振问题，这确实是乱码产生的一个因素。但是，经过仔细确认，我的板子不存在这个问题。经仔细看了原理图，是MINI板的问题，串口的RX,TX确实引出来了，但是没有232的电平转换，因此直接用杜邦线将排针上的RX,TX直接与PC的串口对应线连接是不能正确的，必须乱码！</p>
+<p>总得通信起来吧，那就USB虚拟串口方式了，于是就有了这篇笔记。</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2021/09/26/stm32-usb/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
       
   
   
@@ -833,20 +911,20 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">8</span>
+          <span class="site-state-item-count">9</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-count">6</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">14</span>
+        <span class="site-state-item-count">17</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
