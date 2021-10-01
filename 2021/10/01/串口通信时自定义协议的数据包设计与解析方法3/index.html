@@ -20,24 +20,25 @@
     var CONFIG = {"hostname":"fivexxxxx.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false,"b2t":false,"scollpercent":true},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
   </script>
 
-  <meta name="description" content="前言：之前，实现了STM32103的USB虚拟串口的功能，但是调试时发现当每次下载完程序后，需要重新插拔USB线，电脑端才能识别到，反复这样的操作很烦人。其实解决办法也很简单，就是让USB的两个管脚都保持几个毫秒的低电平即可…">
+  <meta name="description" content="前言：前面写了串口通信时自定义协议的数据包设计与解析方法的笔记，笔记介绍三种方式，都在一个文件操作，觉得拆分为多文件为好，于是有了这篇文章。 代码目录结构如下图示：  main.c代码如下：">
 <meta property="og:type" content="article">
-<meta property="og:title" content="stm32103之USB虚拟串口不插拔USB线的方法">
-<meta property="og:url" content="https://fivexxxxx.github.io/2021/09/27/stm32103%E4%B9%8BUSB%E8%99%9A%E6%8B%9F%E4%B8%B2%E5%8F%A3%E4%B8%8D%E6%8F%92%E6%8B%94USB%E7%BA%BF%E7%9A%84%E6%96%B9%E6%B3%95/index.html">
+<meta property="og:title" content="串口通信时自定义协议的数据包设计与解析方法3">
+<meta property="og:url" content="https://fivexxxxx.github.io/2021/10/01/%E4%B8%B2%E5%8F%A3%E9%80%9A%E4%BF%A1%E6%97%B6%E8%87%AA%E5%AE%9A%E4%B9%89%E5%8D%8F%E8%AE%AE%E7%9A%84%E6%95%B0%E6%8D%AE%E5%8C%85%E8%AE%BE%E8%AE%A1%E4%B8%8E%E8%A7%A3%E6%9E%90%E6%96%B9%E6%B3%953/index.html">
 <meta property="og:site_name" content="Armoon的一亩三分自留地">
-<meta property="og:description" content="前言：之前，实现了STM32103的USB虚拟串口的功能，但是调试时发现当每次下载完程序后，需要重新插拔USB线，电脑端才能识别到，反复这样的操作很烦人。其实解决办法也很简单，就是让USB的两个管脚都保持几个毫秒的低电平即可…">
+<meta property="og:description" content="前言：前面写了串口通信时自定义协议的数据包设计与解析方法的笔记，笔记介绍三种方式，都在一个文件操作，觉得拆分为多文件为好，于是有了这篇文章。 代码目录结构如下图示：  main.c代码如下：">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://fivexxxxx.github.io/2021/09/27/stm32103%E4%B9%8BUSB%E8%99%9A%E6%8B%9F%E4%B8%B2%E5%8F%A3%E4%B8%8D%E6%8F%92%E6%8B%94USB%E7%BA%BF%E7%9A%84%E6%96%B9%E6%B3%95/code1.png">
-<meta property="og:image" content="https://fivexxxxx.github.io/2021/09/27/stm32103%E4%B9%8BUSB%E8%99%9A%E6%8B%9F%E4%B8%B2%E5%8F%A3%E4%B8%8D%E6%8F%92%E6%8B%94USB%E7%BA%BF%E7%9A%84%E6%96%B9%E6%B3%95/code2.png">
-<meta property="article:published_time" content="2021-09-27T00:25:08.928Z">
-<meta property="article:modified_time" content="2021-09-27T00:46:32.584Z">
+<meta property="og:image" content="https://fivexxxxx.github.io/2021/10/01/%E4%B8%B2%E5%8F%A3%E9%80%9A%E4%BF%A1%E6%97%B6%E8%87%AA%E5%AE%9A%E4%B9%89%E5%8D%8F%E8%AE%AE%E7%9A%84%E6%95%B0%E6%8D%AE%E5%8C%85%E8%AE%BE%E8%AE%A1%E4%B8%8E%E8%A7%A3%E6%9E%90%E6%96%B9%E6%B3%953/%E7%BB%93%E6%9E%841.png">
+<meta property="og:image" content="https://fivexxxxx.github.io/2021/10/01/%E4%B8%B2%E5%8F%A3%E9%80%9A%E4%BF%A1%E6%97%B6%E8%87%AA%E5%AE%9A%E4%B9%89%E5%8D%8F%E8%AE%AE%E7%9A%84%E6%95%B0%E6%8D%AE%E5%8C%85%E8%AE%BE%E8%AE%A1%E4%B8%8E%E8%A7%A3%E6%9E%90%E6%96%B9%E6%B3%953/%E7%BB%93%E6%9E%842.png">
+<meta property="article:published_time" content="2021-10-01T13:15:04.057Z">
+<meta property="article:modified_time" content="2021-10-01T13:32:55.172Z">
 <meta property="article:author" content="Armoon">
 <meta property="article:tag" content="stm32">
-<meta property="article:tag" content="usb">
+<meta property="article:tag" content="uart">
+<meta property="article:tag" content="串口通信">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://fivexxxxx.github.io/2021/09/27/stm32103%E4%B9%8BUSB%E8%99%9A%E6%8B%9F%E4%B8%B2%E5%8F%A3%E4%B8%8D%E6%8F%92%E6%8B%94USB%E7%BA%BF%E7%9A%84%E6%96%B9%E6%B3%95/code1.png">
+<meta name="twitter:image" content="https://fivexxxxx.github.io/2021/10/01/%E4%B8%B2%E5%8F%A3%E9%80%9A%E4%BF%A1%E6%97%B6%E8%87%AA%E5%AE%9A%E4%B9%89%E5%8D%8F%E8%AE%AE%E7%9A%84%E6%95%B0%E6%8D%AE%E5%8C%85%E8%AE%BE%E8%AE%A1%E4%B8%8E%E8%A7%A3%E6%9E%90%E6%96%B9%E6%B3%953/%E7%BB%93%E6%9E%841.png">
 
-<link rel="canonical" href="https://fivexxxxx.github.io/2021/09/27/stm32103%E4%B9%8BUSB%E8%99%9A%E6%8B%9F%E4%B8%B2%E5%8F%A3%E4%B8%8D%E6%8F%92%E6%8B%94USB%E7%BA%BF%E7%9A%84%E6%96%B9%E6%B3%95/">
+<link rel="canonical" href="https://fivexxxxx.github.io/2021/10/01/%E4%B8%B2%E5%8F%A3%E9%80%9A%E4%BF%A1%E6%97%B6%E8%87%AA%E5%AE%9A%E4%B9%89%E5%8D%8F%E8%AE%AE%E7%9A%84%E6%95%B0%E6%8D%AE%E5%8C%85%E8%AE%BE%E8%AE%A1%E4%B8%8E%E8%A7%A3%E6%9E%90%E6%96%B9%E6%B3%953/">
 
 
 <script id="page-configurations">
@@ -50,7 +51,7 @@
   };
 </script>
 
-  <title>stm32103之USB虚拟串口不插拔USB线的方法 | Armoon的一亩三分自留地</title>
+  <title>串口通信时自定义协议的数据包设计与解析方法3 | Armoon的一亩三分自留地</title>
   
 
 
@@ -171,7 +172,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://fivexxxxx.github.io/2021/09/27/stm32103%E4%B9%8BUSB%E8%99%9A%E6%8B%9F%E4%B8%B2%E5%8F%A3%E4%B8%8D%E6%8F%92%E6%8B%94USB%E7%BA%BF%E7%9A%84%E6%96%B9%E6%B3%95/">
+    <link itemprop="mainEntityOfPage" href="https://fivexxxxx.github.io/2021/10/01/%E4%B8%B2%E5%8F%A3%E9%80%9A%E4%BF%A1%E6%97%B6%E8%87%AA%E5%AE%9A%E4%B9%89%E5%8D%8F%E8%AE%AE%E7%9A%84%E6%95%B0%E6%8D%AE%E5%8C%85%E8%AE%BE%E8%AE%A1%E4%B8%8E%E8%A7%A3%E6%9E%90%E6%96%B9%E6%B3%953/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.png">
@@ -184,7 +185,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          stm32103之USB虚拟串口不插拔USB线的方法
+          串口通信时自定义协议的数据包设计与解析方法3
         </h1>
 
         <div class="post-meta">
@@ -195,7 +196,7 @@
               <span class="post-meta-item-text">发表于</span>
               
 
-              <time title="创建时间：2021-09-27 08:25:08 / 修改时间：08:46:32" itemprop="dateCreated datePublished" datetime="2021-09-27T08:25:08+08:00">2021-09-27</time>
+              <time title="创建时间：2021-10-01 21:15:04 / 修改时间：21:32:55" itemprop="dateCreated datePublished" datetime="2021-10-01T21:15:04+08:00">2021-10-01</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -203,7 +204,7 @@
               </span>
               <span class="post-meta-item-text">分类于</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/STM32/" itemprop="url" rel="index"><span itemprop="name">STM32</span></a>
+                  <a href="/categories/stm32/" itemprop="url" rel="index"><span itemprop="name">stm32</span></a>
                 </span>
             </span>
 
@@ -225,47 +226,103 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <h1 id="前言："><a href="#前言：" class="headerlink" title="前言："></a>前言：</h1><p>之前，实现了STM32103的USB虚拟串口的功能，但是调试时发现当每次下载完程序后，需要重新插拔USB线，电脑端才能识别到，反复这样的操作很烦人。其实解决办法也很简单，就是让USB的两个管脚都保持几个毫秒的低电平即可…</p>
-<span id="more"></span>
+        <h1 id="前言："><a href="#前言：" class="headerlink" title="前言："></a>前言：</h1><p>前面写了串口通信时自定义协议的数据包设计与解析方法的笔记，笔记介绍三种方式，都在一个文件操作，觉得拆分为多文件为好，于是有了这篇文章。</p>
+<p>代码目录结构如下图示：</p>
+<p><img src="/2021/10/01/%E4%B8%B2%E5%8F%A3%E9%80%9A%E4%BF%A1%E6%97%B6%E8%87%AA%E5%AE%9A%E4%B9%89%E5%8D%8F%E8%AE%AE%E7%9A%84%E6%95%B0%E6%8D%AE%E5%8C%85%E8%AE%BE%E8%AE%A1%E4%B8%8E%E8%A7%A3%E6%9E%90%E6%96%B9%E6%B3%953/%E7%BB%93%E6%9E%841.png"></p>
+<h2 id="main-c代码如下："><a href="#main-c代码如下：" class="headerlink" title="main.c代码如下："></a>main.c代码如下：</h2><span id="more"></span>
+<pre><code>#include&lt;stdio.h&gt;
+#include&quot;stm32_protocol_parser.h&quot;
 
-<h2 id="实现步骤如下："><a href="#实现步骤如下：" class="headerlink" title="实现步骤如下："></a>实现步骤如下：</h2><p>主要要在main.c文件增加代码，操作USB的两个PIN即可，还是老套路，贴代码和代码截图，方便复制和对照。</p>
-<p>首先，声明和调用如下：</p>
-<pre><code>/* USER CODE BEGIN 0 */
-void USB_Status_Init(void);
-/* USER CODE END 0 */
-
-  /* USER CODE BEGIN SysInit */
-USB_Status_Init();
-  /* USER CODE END SysInit */
-</code></pre>
-<p><img src="/2021/09/27/stm32103%E4%B9%8BUSB%E8%99%9A%E6%8B%9F%E4%B8%B2%E5%8F%A3%E4%B8%8D%E6%8F%92%E6%8B%94USB%E7%BA%BF%E7%9A%84%E6%96%B9%E6%B3%95/code1.png"></p>
-<p>其次，函数USB_Status_Init()实现：</p>
-<pre><code>/**函数用来复位USB口
-*即让USB的两个PIN保持一段时间低电平。
-**/
-void USB_Status_Init(void)
-&#123;    
-    GPIO_InitTypeDef GPIO_InitStruct = &#123;0&#125;;
-
-  /* GPIO Ports Clock Enable */
-      __HAL_RCC_GPIOA_CLK_ENABLE();
-
-      /*Configure GPIO pin Output Level */
-      HAL_GPIO_WritePin(GPIOA, GPIO_PIN_11|GPIO_PIN_12, GPIO_PIN_RESET);
-
-  /*Configure GPIO pin : PA11 PA12 */    
-      GPIO_InitStruct.Pin = GPIO_PIN_11|GPIO_PIN_12;
-      GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-      GPIO_InitStruct.Pull = GPIO_NOPULL;
-      GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;    
-      HAL_GPIO_Init(GPIOA, &amp;GPIO_InitStruct);
-
-    HAL_Delay(10);
+//packet格式=&#123;boot len cmd data[] check&#125;
+void main(void)
+&#123;
+    int txbuff[5] = &#123; 0x40,0x03,0x02,0xBC,0xBD &#125;;
+    int rxbuff[64];
+    int len = 0;
+    packet_cmds_parse(txbuff, 5, rxbuff, &amp;len);
+    printf(&quot;main\n&quot;);
 &#125;
 </code></pre>
-<p><img src="/2021/09/27/stm32103%E4%B9%8BUSB%E8%99%9A%E6%8B%9F%E4%B8%B2%E5%8F%A3%E4%B8%8D%E6%8F%92%E6%8B%94USB%E7%BA%BF%E7%9A%84%E6%96%B9%E6%B3%95/code2.png"></p>
-<h1 id="测试："><a href="#测试：" class="headerlink" title="测试："></a>测试：</h1><p>完成上面的操作后，编译，下载，开始测试，不用每次都要插拔USB线。</p>
-<p>按复位键反复测试时，在PC上用串口调试助手打开虚拟的串口号都OK，不报串口号不存在或串口被占用的错误了。</p>
+<h2 id="stm32-protocol-parser-c代码如下："><a href="#stm32-protocol-parser-c代码如下：" class="headerlink" title="stm32_protocol_parser.c代码如下："></a>stm32_protocol_parser.c代码如下：</h2><pre><code>#include&quot;stm32_protocol_parser.h&quot;
+#include&quot;stm32_protocol_cmds.h&quot;
+
+void app_get_version(int* idata, int ilen, int* odata, int* olen)
+&#123;
+    printf(&quot;app_get_version\n&quot;);
+&#125;
+void app_start_read(int* idata, int ilen, int* odata, int* olen)
+&#123;
+    printf(&quot;app_start_read\n&quot;);
+&#125;
+void app_handle_err(int* idata, int ilen, int* odata, int* olen)
+&#123;
+    printf(&quot;app_handle_err\n&quot;);
+&#125;
+
+void packet_cmds_parse(int* idata, int ilen, int* odata, int* olen)
+&#123;
+    packet_cmd_list_t* pcmd_list = app_cmds_list;
+    packet_t* pcmd = (packet_t*)idata;
+
+    while ((pcmd_list-&gt;cmd != pcmd-&gt;cmd) &amp;&amp; (pcmd_list-&gt;cmd != 0))
+    &#123;
+        pcmd_list++;
+    &#125;
+    // 查表结束，执行表中对应回调函数
+    pcmd_list-&gt;pcallback(idata, ilen, odata, olen);
+&#125;
+</code></pre>
+<p>##stm32_protocol_cmds.h代码如下：##</p>
+<pre><code>#pragma once
+#include &lt;string.h&gt;
+#include &lt;stdio.h&gt;
+#include&lt;stdint.h&gt;
+
+#pragma pack(1)
+typedef    enum &#123;
+    BOOT_CODE_OK = 0x40,
+    BOOT_CODE_RETURN = 0xF0,
+    BOOT_CODE_ERROR = 0xF4
+&#125;packet_boot_code_e;
+
+typedef    enum &#123;
+    NONE = 0x00,
+    CMD_GET_VER = 0x02,
+    CMD_START_READ = 0x06
+&#125;packte_cmd_e;
+
+typedef    struct &#123;
+    packet_boot_code_e    boot_code;
+    int                    len;
+    packte_cmd_e        cmd;
+    int                    data[64];
+    int                    check;
+&#125;packet_t;
+
+typedef struct &#123;
+    packte_cmd_e    cmd;
+    void(*pcallback)(int* idata, int ilen, int* odata, int* olen);
+&#125;packet_cmd_list_t;
+
+packet_cmd_list_t app_cmds_list[] =
+&#123;
+    &#123;CMD_GET_VER,        app_get_version    &#125;,
+    &#123;CMD_START_READ,    app_start_read    &#125;,
+
+    &#123;NONE,                app_handle_err    &#125;
+&#125;;
+#pragma pack()
+</code></pre>
+<p>##stm32_protocol_parser.h代码如下：##</p>
+<pre><code>#pragma once
+void packet_cmds_parse(int* idata, int ilen, int* odata, int* olen);
+void app_get_version(int* idata, int ilen, int* odata, int* olen);
+void app_start_read(int* idata, int ilen, int* odata, int* olen);
+void app_handle_err(int* idata, int ilen, int* odata, int* olen);
+</code></pre>
+<p>##运行结果如下：##</p>
+<p><img src="/2021/10/01/%E4%B8%B2%E5%8F%A3%E9%80%9A%E4%BF%A1%E6%97%B6%E8%87%AA%E5%AE%9A%E4%B9%89%E5%8D%8F%E8%AE%AE%E7%9A%84%E6%95%B0%E6%8D%AE%E5%8C%85%E8%AE%BE%E8%AE%A1%E4%B8%8E%E8%A7%A3%E6%9E%90%E6%96%B9%E6%B3%953/%E7%BB%93%E6%9E%842.png"></p>
+<p>##结束语##<br>这几篇和数据包解析的笔记都是在VS2019里调试，总是觉得MDK里没有VS里调试方便。</p>
 
     </div>
 
@@ -276,7 +333,8 @@ void USB_Status_Init(void)
       <footer class="post-footer">
           <div class="post-tags">
               <a href="/tags/stm32/" rel="tag"># stm32</a>
-              <a href="/tags/usb/" rel="tag"># usb</a>
+              <a href="/tags/uart/" rel="tag"># uart</a>
+              <a href="/tags/%E4%B8%B2%E5%8F%A3%E9%80%9A%E4%BF%A1/" rel="tag"># 串口通信</a>
           </div>
 
         
@@ -285,13 +343,10 @@ void USB_Status_Init(void)
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2021/09/26/Hexo%E5%8D%9A%E5%AE%A2%E4%B8%8D%E6%98%BE%E7%A4%BA%E5%9B%BE%E7%89%87%E7%9A%84%E4%B8%80%E7%A7%8D%E8%A7%A3%E5%86%B3%E6%96%B9%E6%B3%95/" rel="prev" title="Hexo博客不显示图片的一种解决方法">
-      <i class="fa fa-chevron-left"></i> Hexo博客不显示图片的一种解决方法
+    <a href="/2021/09/30/%E4%B8%B2%E5%8F%A3%E9%80%9A%E4%BF%A1%E6%97%B6%E8%87%AA%E5%AE%9A%E4%B9%89%E5%8D%8F%E8%AE%AE%E7%9A%84%E6%95%B0%E6%8D%AE%E5%8C%85%E8%AE%BE%E8%AE%A1%E4%B8%8E%E8%A7%A3%E6%9E%90%E6%96%B9%E6%B3%952/" rel="prev" title="串口通信时自定义协议的数据包设计与解析方法-2">
+      <i class="fa fa-chevron-left"></i> 串口通信时自定义协议的数据包设计与解析方法-2
     </a></div>
-      <div class="post-nav-item">
-    <a href="/2021/09/28/%E4%B8%B2%E5%8F%A3%E9%80%9A%E4%BF%A1%E6%97%B6%E8%87%AA%E5%AE%9A%E4%B9%89%E5%8D%8F%E8%AE%AE%E7%9A%84%E6%95%B0%E6%8D%AE%E5%8C%85%E8%AE%BE%E8%AE%A1%E4%B8%8E%E8%A7%A3%E6%9E%90%E6%96%B9%E6%B3%95/" rel="next" title="串口通信时自定义协议的数据包设计与解析方法">
-      串口通信时自定义协议的数据包设计与解析方法 <i class="fa fa-chevron-right"></i>
-    </a></div>
+      <div class="post-nav-item"></div>
     </div>
       </footer>
     
@@ -350,7 +405,7 @@ void USB_Status_Init(void)
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%89%8D%E8%A8%80%EF%BC%9A"><span class="nav-number">1.</span> <span class="nav-text">前言：</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9E%E7%8E%B0%E6%AD%A5%E9%AA%A4%E5%A6%82%E4%B8%8B%EF%BC%9A"><span class="nav-number">1.1.</span> <span class="nav-text">实现步骤如下：</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%B5%8B%E8%AF%95%EF%BC%9A"><span class="nav-number">2.</span> <span class="nav-text">测试：</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%89%8D%E8%A8%80%EF%BC%9A"><span class="nav-number">1.</span> <span class="nav-text">前言：</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#main-c%E4%BB%A3%E7%A0%81%E5%A6%82%E4%B8%8B%EF%BC%9A"><span class="nav-number">1.1.</span> <span class="nav-text">main.c代码如下：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#stm32-protocol-parser-c%E4%BB%A3%E7%A0%81%E5%A6%82%E4%B8%8B%EF%BC%9A"><span class="nav-number">1.2.</span> <span class="nav-text">stm32_protocol_parser.c代码如下：</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
