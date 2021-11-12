@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"fivexxxxx.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false,"b2t":false,"scollpercent":true},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="前言：本笔记记录linux平台调用so动态库文件的示例，工程创建使用vs2019+visualGDB,这样的组合调试起来方便，开个LINUX虚拟机后,VS2019调试linux平台代码和windows平台调试程序没啥区别，就是算爽。 概念的东西就不罗嗦，直接演示过程。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="linux平台调用*.so库文件的方法">
+<meta property="og:url" content="https://fivexxxxx.github.io/2021/11/12/linux%E5%B9%B3%E5%8F%B0%E8%B0%83%E7%94%A8-so%E5%BA%93%E6%96%87%E4%BB%B6%E7%9A%84%E6%96%B9%E6%B3%95/index.html">
+<meta property="og:site_name" content="Armoon的一亩三分自留地">
+<meta property="og:description" content="前言：本笔记记录linux平台调用so动态库文件的示例，工程创建使用vs2019+visualGDB,这样的组合调试起来方便，开个LINUX虚拟机后,VS2019调试linux平台代码和windows平台调试程序没啥区别，就是算爽。 概念的东西就不罗嗦，直接演示过程。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://fivexxxxx.github.io/2021/11/12/linux%E5%B9%B3%E5%8F%B0%E8%B0%83%E7%94%A8-so%E5%BA%93%E6%96%87%E4%BB%B6%E7%9A%84%E6%96%B9%E6%B3%95/linux_so_01.png">
+<meta property="og:image" content="https://fivexxxxx.github.io/2021/11/12/linux%E5%B9%B3%E5%8F%B0%E8%B0%83%E7%94%A8-so%E5%BA%93%E6%96%87%E4%BB%B6%E7%9A%84%E6%96%B9%E6%B3%95/linux_so_02.png">
+<meta property="og:image" content="https://fivexxxxx.github.io/2021/11/12/linux%E5%B9%B3%E5%8F%B0%E8%B0%83%E7%94%A8-so%E5%BA%93%E6%96%87%E4%BB%B6%E7%9A%84%E6%96%B9%E6%B3%95/linux_so_03.png">
+<meta property="article:published_time" content="2021-11-12T00:45:24.808Z">
+<meta property="article:modified_time" content="2021-11-12T01:33:15.899Z">
+<meta property="article:author" content="Armoon">
+<meta property="article:tag" content="linux">
+<meta property="article:tag" content="so库文件">
+<meta property="article:tag" content="viusualGDB">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://fivexxxxx.github.io/2021/11/12/linux%E5%B9%B3%E5%8F%B0%E8%B0%83%E7%94%A8-so%E5%BA%93%E6%96%87%E4%BB%B6%E7%9A%84%E6%96%B9%E6%B3%95/linux_so_01.png">
+
+<link rel="canonical" href="https://fivexxxxx.github.io/2021/11/12/linux%E5%B9%B3%E5%8F%B0%E8%B0%83%E7%94%A8-so%E5%BA%93%E6%96%87%E4%BB%B6%E7%9A%84%E6%96%B9%E6%B3%95/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>linux平台调用*.so库文件的方法 | Armoon的一亩三分自留地</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Armoon的一亩三分自留地</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">记录生活的点点滴滴</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签<span class="badge">24</span></a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类<span class="badge">9</span></a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档<span class="badge">15</span></a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://fivexxxxx.github.io/2021/11/12/linux%E5%B9%B3%E5%8F%B0%E8%B0%83%E7%94%A8-so%E5%BA%93%E6%96%87%E4%BB%B6%E7%9A%84%E6%96%B9%E6%B3%95/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Armoon">
+      <meta itemprop="description" content="把酒长亭杯已空,行人车马各西东。 枫林不共斜阳去,自向荒郊寂寞红。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Armoon的一亩三分自留地">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          linux平台调用*.so库文件的方法
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2021-11-12 08:45:24 / 修改时间：09:33:15" itemprop="dateCreated datePublished" datetime="2021-11-12T08:45:24+08:00">2021-11-12</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/linux/" itemprop="url" rel="index"><span itemprop="name">linux</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="前言："><a href="#前言：" class="headerlink" title="前言："></a>前言：</h1><p>本笔记记录linux平台调用so动态库文件的示例，工程创建使用vs2019+visualGDB,这样的组合调试起来方便，开个LINUX虚拟机后,VS2019调试linux平台代码和windows平台调试程序没啥区别，就是算爽。</p>
+<p>概念的东西就不罗嗦，直接演示过程。</p>
+<span id="more"></span>
+<h1 id="库文件说明-："><a href="#库文件说明-：" class="headerlink" title="库文件说明 ："></a>库文件说明 ：</h1><p>库的头文件：</p>
+<pre><code>#include &lt;stddef.h&gt;
+#include &lt;stdio.h&gt;
+#include &lt;string.h&gt;
+#include &lt;arpa/inet.h&gt;
+#include &lt;sys/types.h&gt;
+#include &lt;sys/socket.h&gt;
+#include &lt;sys/sendfile.h&gt;
+#include &lt;netdb.h&gt;
+#include &lt;fcntl.h&gt;
+#include &lt;unistd.h&gt;
+#ifdef __cplusplus
+extern &quot;C&quot; &#123;
+#endif
+int _xlab_init(void** api, char* confdir);
+
+void _xlab_exit();
+
+int _xlab_network_io_accept(int server_fd);
+
+int _xlab_network_io_read(int socket_fd, void* buf, int count);
+
+int _xlab_network_io_write(int socket_fd, const void* buf, size_t count);
+
+int _xlab_network_io_close(int socket_fd);
+
+int _xlab_network_io_create_socket(int domain, int type, int protocol);
+/* We need to know how to solve the problem with AF_INET and AF_INET6 */
+int _xlab_network_io_connect(char* host, int port);   
+
+int _xlab_network_io_send_file(int socket_fd, int file_fd, off_t* file_offset, size_t file_count);
+
+int _xlab_network_io_bind(int socket_fd, const struct sockaddr* addr, socklen_t addrlen, int backlog);
+
+int _xlab_network_io_server(int port, char* listen_addr);
+
+#ifdef __cplusplus
+&#125;
+#endif
+</code></pre>
+<p>库的实现文件：</p>
+<pre><code>/* -*- Mode: C; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
+#define _GNU_SOURCE
+#include &lt;stdio.h&gt;
+#include &lt;string.h&gt;
+#include &lt;arpa/inet.h&gt;
+#include &lt;sys/types.h&gt;
+#include &lt;sys/socket.h&gt;
+#include &lt;sys/sendfile.h&gt;
+#include &lt;netdb.h&gt;
+#include &lt;fcntl.h&gt;
+#include &lt;unistd.h&gt;
+#include &lt;stdarg.h&gt;
+#include &lt;netinet/tcp.h&gt;
+#include &lt;stdlib.h&gt;
+#include &quot;XLABPlugin.h&quot;
+#include &quot;xlab-liana.h&quot;
+
+XLAB_PLUGIN(&quot;liana&quot;,            /* shortname */
+    &quot;Liana Network&quot;,            /* name */
+    VERSION,                    /* version */
+    XLAB_PLUGIN_NETWORK_IO);    /* hooks */
+
+void* xlab_mem_malloc(const size_t size)
+&#123;
+    void* aux = malloc(size);
+
+    if (!aux &amp;&amp; size) &#123;
+        perror(&quot;malloc&quot;);
+        return NULL;
+    &#125;
+
+    return aux;
+&#125;
+void xlab_mem_free(void* ptr)
+&#123;
+    free(ptr);
+&#125;
+int xlab_socket_set_tcp_nodelay(int sockfd)
+&#123;
+    int on = 1;
+
+    return setsockopt(sockfd, SOL_TCP, TCP_NODELAY, &amp;on, sizeof(on));
+&#125;
+int xlab_socket_reset(int socket)
+&#123;
+    int status = 1;
+
+    if (setsockopt(socket, SOL_SOCKET, SO_REUSEADDR, &amp;status, sizeof(int)) ==
+        -1) &#123;
+        perror(&quot;setsockopt&quot;);
+        exit(EXIT_FAILURE);
+    &#125;
+
+    return 0;
+&#125;
+char* xlab_string_build(char** buffer, unsigned long* len,const char* format, ...)
+&#123;
+    va_list ap;
+    int length;
+    char* ptr;
+    static size_t _mem_alloc = 64;
+    size_t alloc = 0;
+
+    *buffer = (char*)xlab_mem_malloc(_mem_alloc);
+
+    if (!*buffer) &#123;
+        return NULL;
+    &#125;
+    alloc = _mem_alloc;
+
+    va_start(ap, format);
+    length = vsnprintf(*buffer, alloc, format, ap);
+    va_end(ap);
+
+    if (length &gt;= alloc) &#123;
+        ptr = realloc(*buffer, length + 1);
+        if (!ptr) &#123;
+            return NULL;
+        &#125;
+        *buffer = ptr;
+        alloc = length + 1;
+
+        va_start(ap, format);
+        length = vsnprintf(*buffer, alloc, format, ap);
+        va_end(ap);
+    &#125;
+
+    if (length &lt; 0) &#123;
+        return NULL;
+    &#125;
+
+    ptr = *buffer;
+    ptr[length] = &#39;\0&#39;;
+    *len = length;
+
+    return *buffer;
+&#125;
+int _xlab_init(void** api, char* confdir)
+&#123;
+    return 0;
+&#125;
+void _xlab_exit()
+&#123;
+&#125;
+int _xlab_network_io_accept(int server_fd)
+&#123;
+    int remote_fd;
+    struct sockaddr sock_addr;
+    socklen_t socket_size = sizeof(struct sockaddr);
+
+#ifdef ACCEPT_GENERIC
+    remote_fd = accept(server_fd, &amp;sock_addr, &amp;socket_size);
+    xlab_api-&gt;socket_set_nonblocking(remote_fd);
+#else
+    remote_fd = accept4(server_fd, &amp;sock_addr, &amp;socket_size, SOCK_NONBLOCK);
+#endif
+
+    return remote_fd;
+&#125;
+int _xlab_network_io_read(int socket_fd, void* buf, int count)
+&#123;
+    ssize_t bytes_read;
+
+    bytes_read = read(socket_fd, (void*)buf, count);
+
+    return bytes_read;
+&#125;
+int _xlab_network_io_write(int socket_fd, const void* buf, size_t count)
+&#123;
+    ssize_t bytes_sent = -1;
+
+    bytes_sent = write(socket_fd, buf, count);
+
+    return bytes_sent;
+&#125;
+int _xlab_network_io_close(int socket_fd)
+&#123;
+    close(socket_fd);
+    return 0;
+&#125;
+int _xlab_network_io_create_socket(int domain, int type, int protocol)
+&#123;
+    int socket_fd;
+
+    socket_fd = socket(domain, type, protocol);
+
+    return socket_fd;
+&#125;
+/* We need to know how to solve the problem with AF_INET and AF_INET6 */
+int _xlab_network_io_connect(char* host, int port)
+&#123;
+    int ret;
+    int socket_fd = -1;
+    char* port_str = 0;
+    unsigned long len;
+    struct addrinfo hints;
+    struct addrinfo* res, * rp;
+
+    memset(&amp;hints, 0, sizeof hints);
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_STREAM;
+
+    xlab_string_build(&amp;port_str, &amp;len, &quot;%d&quot;, port);
+    ret = getaddrinfo(host, port_str, &amp;hints, &amp;res);
+    xlab_mem_free(port_str);
+    if (ret != 0) &#123;
+        return -1;
+    &#125;
+    for (rp = res; rp != NULL; rp = rp-&gt;ai_next) &#123;
+        socket_fd =_xlab_network_io_create_socket(rp-&gt;ai_family, rp-&gt;ai_socktype, rp-&gt;ai_protocol);
+
+        if (socket_fd == -1) &#123;
+            return -1;
+        &#125;
+
+        if (connect(socket_fd,
+            (struct sockaddr*)rp-&gt;ai_addr, rp-&gt;ai_addrlen) == -1) &#123;
+            close(socket_fd);
+            printf(&quot;Can&#39;t connect to %s\n&quot;, host);
+            return -1;
+        &#125;
+
+        break;
+    &#125;
+
+    return socket_fd;
+&#125;
+int _xlab_network_io_send_file(int socket_fd, int file_fd, off_t* file_offset, size_t file_count)
+&#123;
+    ssize_t bytes_written = -1;
+
+    bytes_written = sendfile(socket_fd, file_fd, file_offset, file_count);
+
+    if (bytes_written == -1) &#123;
+        return -1;
+    &#125;
+
+    return bytes_written;
+&#125;
+int _xlab_network_io_bind(int socket_fd, const struct sockaddr* addr, socklen_t addrlen, int backlog)
+&#123;
+    int ret;
+
+    ret = bind(socket_fd, addr, addrlen);
+
+    if (ret == -1) &#123;
+        printf(&quot;Error binding socket\n&quot;);
+        return ret;
+    &#125;
+
+    ret = listen(socket_fd, backlog);
+
+    if (ret == -1) &#123;
+        printf(&quot;Error setting up the listener\n&quot;);
+        return -1;
+    &#125;
+
+    return ret;
+&#125;
+int _xlab_network_io_server(int port, char* listen_addr)
+&#123;
+    int socket_fd = -1;
+    int ret;
+    char* port_str = 0;
+    unsigned long len;
+    struct addrinfo hints;
+    struct addrinfo* res, * rp;
+
+    memset(&amp;hints, 0, sizeof hints);
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_flags = AI_PASSIVE;
+
+    xlab_string_build(&amp;port_str, &amp;len, &quot;%d&quot;, port);
+    ret = getaddrinfo(listen_addr, port_str, &amp;hints, &amp;res);
+    xlab_mem_free(port_str);
+    if (ret != 0) &#123;
+        printf(&quot;Can&#39;t get addr info: %s\n&quot;, gai_strerror(ret));
+        return -1;
+    &#125;
+
+    for (rp = res; rp != NULL; rp = rp-&gt;ai_next) &#123;
+        socket_fd =_xlab_network_io_create_socket(rp-&gt;ai_family, rp-&gt;ai_socktype, rp-&gt;ai_protocol);
+
+        if (socket_fd == -1) &#123;
+            printf(&quot;Error creating server socket\n&quot;);
+            return -1;
+        &#125;
+
+         xlab_socket_set_tcp_nodelay(socket_fd);
+         xlab_socket_reset(socket_fd);
+        ret =_xlab_network_io_bind(socket_fd, rp-&gt;ai_addr, rp-&gt;ai_addrlen, XLAB_SOMAXCONN);
+
+        if (ret == -1) &#123;
+            printf(&quot;Port %i cannot be used\n&quot;, port);
+            return -1;
+        &#125;
+        break;
+    &#125;
+
+    return socket_fd;
+&#125;
+</code></pre>
+<p>编译后库文件–xlab-liana.so</p>
+<h1 id="调用库文件-："><a href="#调用库文件-：" class="headerlink" title="调用库文件 ："></a>调用库文件 ：</h1><p>代码如下：</p>
+<pre><code>#define _GNU_SOURCE
+#include &lt;string.h&gt;
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;dlfcn.h&gt;
+#include &lt;sys/socket.h&gt;
+#include &lt;err.h&gt;
+#include &lt;unistd.h&gt;
+
+#define PLUGIN_PATH &quot;/tmp/VisualGDB/e/2021Code/xlab_prj/load_so_files/xlab-liana/Debug/xlab-liana.so&quot;
+struct plugin_info &#123;
+    const char* shortname;
+    const char* name;
+    const char* version;
+    unsigned int hooks;
+&#125;;
+struct plugin_network_io
+&#123;
+    int (*accept) (int);
+    int (*read) (int, void*, int);
+    int (*write) (int, const void*, size_t);
+    int (*close) (int);
+    int (*connect) (char*, int);
+    int (*send_file) (int, int, off_t*, size_t);
+    int (*create_socket) (int, int, int);
+    int (*bind) (int, const struct sockaddr* addr, socklen_t, int);
+    int (*server) (int, char*);
+&#125;;
+
+struct plugin_network_io* plg_netiomap=NULL;
+
+
+void* xlab_mem_malloc(const size_t size)
+&#123;
+    void* aux = malloc(size);
+
+    if (!aux &amp;&amp; size) &#123;
+        perror(&quot;malloc&quot;);
+        return NULL;
+    &#125;
+
+    return aux;
+&#125;
+void xlab_mem_free(void* ptr)
+&#123;
+    free(ptr);
+&#125;
+
+void* xlab_plugin_load(char* path)
+&#123;
+    void* handle;
+
+    handle = dlopen(path, RTLD_LAZY);
+    if (!handle) &#123;
+        printf(&quot;dlopen() %s&quot;, dlerror());
+    &#125;
+
+    return handle;
+&#125;
+void* xlab_plugin_load_symbol(void* handler, const char* symbol)
+&#123;
+    char* err;
+    void* s;
+
+    dlerror();
+    s = dlsym(handler, symbol);
+    if ((err = dlerror()) != NULL) &#123;
+        return NULL;
+    &#125;
+
+    return s;
+&#125;
+
+/* Just IPv4 for now... */
+int xlab_socket_server(int port, char* listen_addr)
+&#123;
+    int socket_fd;
+
+    socket_fd = plg_netiomap-&gt;server(port, listen_addr);
+
+    if (socket_fd &lt; 0) &#123;
+        exit(EXIT_FAILURE);
+    &#125;
+
+    return socket_fd;
+&#125;
+int main(int argc, char *argv[])
+&#123;
+    int server_fd;
+    int remote_fd;
+    int recv[64];
+    int bytes=0;
+    char* path = PLUGIN_PATH;
+    void* handle;
+    char* ip = &quot;0.0.0.0&quot;;
+    short int port = 2001;
+    struct plugin_info* info;
+    
+    plg_netiomap = xlab_mem_malloc(sizeof(struct plugin_network_io));
+
+    handle = xlab_plugin_load(path);
+    if (!handle) &#123;
+        printf(&quot;Invalid plugin &#39;%s&#39;&quot;, path);
+    &#125;
+
+    info = (struct plugin_info*)xlab_plugin_load_symbol(handle, &quot;_plugin_info&quot;);
+
+    if (!info) &#123;
+        printf(&quot;Plugin &#39;%s&#39; is not registering properly&quot;, path);
+        return -1;
+    &#125;
+    printf(&quot;shortname %s\n&quot;, info-&gt;shortname);
+    printf(&quot;name %s\n&quot;, info-&gt;name);
+    printf(&quot;version %s\n&quot;, info-&gt;version);
+    printf(&quot;hooks %d\n&quot;, info-&gt;hooks );
+   
+#if 0 //test
+    plg_netiomap-&gt;connect = (int (*)())xlab_plugin_load_symbol(handle, &quot;_xlab_network_io_connect&quot;);    
+    plg_netiomap-&gt;send_file = (int (*)())xlab_plugin_load_symbol(handle, &quot;_xlab_network_io_send_file&quot;);
+    plg_netiomap-&gt;create_socket = (int (*)())xlab_plugin_load_symbol(handle, &quot;_xlab_network_io_create_socket&quot;);
+    plg_netiomap-&gt;bind = (int (*)())xlab_plugin_load_symbol(handle, &quot;_xlab_network_io_bind&quot;);
+#endif // 0  
+
+    plg_netiomap-&gt;accept = (int (*)())xlab_plugin_load_symbol(handle, &quot;_xlab_network_io_accept&quot;);
+    plg_netiomap-&gt;server = (int (*)())xlab_plugin_load_symbol(handle, &quot;_xlab_network_io_server&quot;);
+    plg_netiomap-&gt;read = (int (*)())xlab_plugin_load_symbol(handle, &quot;_xlab_network_io_read&quot;);
+    plg_netiomap-&gt;write = (int (*)())xlab_plugin_load_symbol(handle, &quot;_xlab_network_io_write&quot;);
+    plg_netiomap-&gt;close = (int (*)())xlab_plugin_load_symbol(handle, &quot;_xlab_network_io_close&quot;);
+
+   /* Server listening socket */
+   server_fd=xlab_socket_server(port,ip);
+   remote_fd = plg_netiomap-&gt;accept(server_fd);
+   if (remote_fd == -1) &#123;
+       exit(1);
+   &#125;
+   printf(&quot;remote_fd %d\n&quot;, remote_fd);
+   while (1) &#123;
+       bytes = plg_netiomap-&gt;read(remote_fd, recv, 4);
+      
+       if ( bytes&gt; 0) &#123;           
+           plg_netiomap-&gt;write(remote_fd, recv, 4);
+       &#125;
+       else if (bytes == 0) &#123;
+           plg_netiomap-&gt;close(remote_fd);
+           break;
+       &#125;
+       else
+       &#123;
+          continue;
+       &#125;
+       usleep(1000000);
+   &#125;
+   xlab_mem_free(plg_netiomap);
+    return 0;
+&#125;
+</code></pre>
+<p>测试结果：</p>
+<p><img src="/2021/11/12/linux%E5%B9%B3%E5%8F%B0%E8%B0%83%E7%94%A8-so%E5%BA%93%E6%96%87%E4%BB%B6%E7%9A%84%E6%96%B9%E6%B3%95/linux_so_01.png"></p>
+<h1 id="总结："><a href="#总结：" class="headerlink" title="总结："></a>总结：</h1><p>用vs2019+visualGDB这样的方式非常棒，主要是调试方便，且可以断点到so文件内部代码，也就是说调试so文件也很方便，可以断点单步调试…<br>如下图所示：</p>
+<p><img src="/2021/11/12/linux%E5%B9%B3%E5%8F%B0%E8%B0%83%E7%94%A8-so%E5%BA%93%E6%96%87%E4%BB%B6%E7%9A%84%E6%96%B9%E6%B3%95/linux_so_02.png"></p>
+<p>下断点后，单步进入即可调试库文件</p>
+<p><img src="/2021/11/12/linux%E5%B9%B3%E5%8F%B0%E8%B0%83%E7%94%A8-so%E5%BA%93%E6%96%87%E4%BB%B6%E7%9A%84%E6%96%B9%E6%B3%95/linux_so_03.png"></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/linux/" rel="tag"># linux</a>
+              <a href="/tags/so%E5%BA%93%E6%96%87%E4%BB%B6/" rel="tag"># so库文件</a>
+              <a href="/tags/viusualGDB/" rel="tag"># viusualGDB</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/10/01/%E4%B8%B2%E5%8F%A3%E9%80%9A%E4%BF%A1%E6%97%B6%E8%87%AA%E5%AE%9A%E4%B9%89%E5%8D%8F%E8%AE%AE%E7%9A%84%E6%95%B0%E6%8D%AE%E5%8C%85%E8%AE%BE%E8%AE%A1%E4%B8%8E%E8%A7%A3%E6%9E%90%E6%96%B9%E6%B3%953/" rel="prev" title="串口通信时自定义协议的数据包设计与解析方法3">
+      <i class="fa fa-chevron-left"></i> 串口通信时自定义协议的数据包设计与解析方法3
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%89%8D%E8%A8%80%EF%BC%9A"><span class="nav-number">1.</span> <span class="nav-text">前言：</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%BA%93%E6%96%87%E4%BB%B6%E8%AF%B4%E6%98%8E-%EF%BC%9A"><span class="nav-number">2.</span> <span class="nav-text">库文件说明 ：</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%B0%83%E7%94%A8%E5%BA%93%E6%96%87%E4%BB%B6-%EF%BC%9A"><span class="nav-number">3.</span> <span class="nav-text">调用库文件 ：</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%80%BB%E7%BB%93%EF%BC%9A"><span class="nav-number">4.</span> <span class="nav-text">总结：</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Armoon"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Armoon</p>
+  <div class="site-description" itemprop="description">把酒长亭杯已空,行人车马各西东。 枫林不共斜阳去,自向荒郊寂寞红。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">15</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">24</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Armoon</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
