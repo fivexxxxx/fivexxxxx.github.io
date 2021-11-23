@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"fivexxxxx.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false,"b2t":false,"scollpercent":true},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="前言：本笔记记录windows10平台上使用QEMU模拟树莓派的详细过程。不作概念解释，只记录详细的过程。主要参考如下： https:&#x2F;&#x2F;blog.csdn.net&#x2F;qq_44116653&#x2F;article&#x2F;details&#x2F;112846583 https:&#x2F;&#x2F;cloud.tencent.com&#x2F;developer&#x2F;article&#x2F;1685107">
+<meta property="og:type" content="article">
+<meta property="og:title" content="基于windows10系统用QEMU模拟树莓派">
+<meta property="og:url" content="https://fivexxxxx.github.io/2021/11/22/%E5%9F%BA%E4%BA%8Ewindows10%E7%B3%BB%E7%BB%9F%E7%94%A8QEMU%E6%A8%A1%E6%8B%9F%E6%A0%91%E8%8E%93%E6%B4%BE/index.html">
+<meta property="og:site_name" content="Armoon的一亩三分自留地">
+<meta property="og:description" content="前言：本笔记记录windows10平台上使用QEMU模拟树莓派的详细过程。不作概念解释，只记录详细的过程。主要参考如下： https:&#x2F;&#x2F;blog.csdn.net&#x2F;qq_44116653&#x2F;article&#x2F;details&#x2F;112846583 https:&#x2F;&#x2F;cloud.tencent.com&#x2F;developer&#x2F;article&#x2F;1685107">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://fivexxxxx.github.io/2021/11/22/%E5%9F%BA%E4%BA%8Ewindows10%E7%B3%BB%E7%BB%9F%E7%94%A8QEMU%E6%A8%A1%E6%8B%9F%E6%A0%91%E8%8E%93%E6%B4%BE/qemu01.png">
+<meta property="og:image" content="https://fivexxxxx.github.io/2021/11/22/%E5%9F%BA%E4%BA%8Ewindows10%E7%B3%BB%E7%BB%9F%E7%94%A8QEMU%E6%A8%A1%E6%8B%9F%E6%A0%91%E8%8E%93%E6%B4%BE/qemu02.png">
+<meta property="og:image" content="https://fivexxxxx.github.io/2021/11/22/%E5%9F%BA%E4%BA%8Ewindows10%E7%B3%BB%E7%BB%9F%E7%94%A8QEMU%E6%A8%A1%E6%8B%9F%E6%A0%91%E8%8E%93%E6%B4%BE/qemu03.png">
+<meta property="og:image" content="https://fivexxxxx.github.io/2021/11/22/%E5%9F%BA%E4%BA%8Ewindows10%E7%B3%BB%E7%BB%9F%E7%94%A8QEMU%E6%A8%A1%E6%8B%9F%E6%A0%91%E8%8E%93%E6%B4%BE/qemu04.png">
+<meta property="og:image" content="https://fivexxxxx.github.io/2021/11/22/%E5%9F%BA%E4%BA%8Ewindows10%E7%B3%BB%E7%BB%9F%E7%94%A8QEMU%E6%A8%A1%E6%8B%9F%E6%A0%91%E8%8E%93%E6%B4%BE/qemu05.png">
+<meta property="og:image" content="https://fivexxxxx.github.io/2021/11/22/%E5%9F%BA%E4%BA%8Ewindows10%E7%B3%BB%E7%BB%9F%E7%94%A8QEMU%E6%A8%A1%E6%8B%9F%E6%A0%91%E8%8E%93%E6%B4%BE/qemu06.png">
+<meta property="og:image" content="https://fivexxxxx.github.io/2021/11/22/%E5%9F%BA%E4%BA%8Ewindows10%E7%B3%BB%E7%BB%9F%E7%94%A8QEMU%E6%A8%A1%E6%8B%9F%E6%A0%91%E8%8E%93%E6%B4%BE/qemu07.png">
+<meta property="og:image" content="https://fivexxxxx.github.io/2021/11/22/%E5%9F%BA%E4%BA%8Ewindows10%E7%B3%BB%E7%BB%9F%E7%94%A8QEMU%E6%A8%A1%E6%8B%9F%E6%A0%91%E8%8E%93%E6%B4%BE/qemu08.png">
+<meta property="article:published_time" content="2021-11-22T14:08:47.682Z">
+<meta property="article:modified_time" content="2021-11-22T14:42:53.209Z">
+<meta property="article:author" content="Armoon">
+<meta property="article:tag" content="qemu">
+<meta property="article:tag" content="树莓派">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://fivexxxxx.github.io/2021/11/22/%E5%9F%BA%E4%BA%8Ewindows10%E7%B3%BB%E7%BB%9F%E7%94%A8QEMU%E6%A8%A1%E6%8B%9F%E6%A0%91%E8%8E%93%E6%B4%BE/qemu01.png">
+
+<link rel="canonical" href="https://fivexxxxx.github.io/2021/11/22/%E5%9F%BA%E4%BA%8Ewindows10%E7%B3%BB%E7%BB%9F%E7%94%A8QEMU%E6%A8%A1%E6%8B%9F%E6%A0%91%E8%8E%93%E6%B4%BE/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>基于windows10系统用QEMU模拟树莓派 | Armoon的一亩三分自留地</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Armoon的一亩三分自留地</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">记录生活的点点滴滴</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签<span class="badge">28</span></a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类<span class="badge">11</span></a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档<span class="badge">17</span></a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://fivexxxxx.github.io/2021/11/22/%E5%9F%BA%E4%BA%8Ewindows10%E7%B3%BB%E7%BB%9F%E7%94%A8QEMU%E6%A8%A1%E6%8B%9F%E6%A0%91%E8%8E%93%E6%B4%BE/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Armoon">
+      <meta itemprop="description" content="把酒长亭杯已空,行人车马各西东。 枫林不共斜阳去,自向荒郊寂寞红。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Armoon的一亩三分自留地">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          基于windows10系统用QEMU模拟树莓派
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2021-11-22 22:08:47 / 修改时间：22:42:53" itemprop="dateCreated datePublished" datetime="2021-11-22T22:08:47+08:00">2021-11-22</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%A0%91%E8%8E%93%E6%B4%BE/" itemprop="url" rel="index"><span itemprop="name">树莓派</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="前言："><a href="#前言：" class="headerlink" title="前言："></a>前言：</h1><p>本笔记记录windows10平台上使用QEMU模拟树莓派的详细过程。不作概念解释，只记录详细的过程。<br>主要参考如下：</p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_44116653/article/details/112846583">https://blog.csdn.net/qq_44116653/article/details/112846583</a></p>
+<p><a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/1685107">https://cloud.tencent.com/developer/article/1685107</a></p>
+<span id="more"></span>
+<h1 id="准备工作："><a href="#准备工作：" class="headerlink" title="准备工作："></a>准备工作：</h1><h2 id="下载QEMU："><a href="#下载QEMU：" class="headerlink" title="下载QEMU："></a>下载QEMU：</h2><p>网址：<a target="_blank" rel="noopener" href="https://www.qemu.org/download/">https://www.qemu.org/download/</a></p>
+<p><img src="/2021/11/22/%E5%9F%BA%E4%BA%8Ewindows10%E7%B3%BB%E7%BB%9F%E7%94%A8QEMU%E6%A8%A1%E6%8B%9F%E6%A0%91%E8%8E%93%E6%B4%BE/qemu01.png"></p>
+<h2 id="下载kernel-qemu"><a href="#下载kernel-qemu" class="headerlink" title="下载kernel-qemu"></a>下载kernel-qemu</h2><p><a target="_blank" rel="noopener" href="https://github.com/dhruvvyas90/qemu-rpi-kernel">https://github.com/dhruvvyas90/qemu-rpi-kernel</a></p>
+<p>下载如下这两个文件</p>
+<p>kernel-qemu-4.19.50-buster</p>
+<p>versatile-pb-buster.dtb</p>
+<h2 id="下载将要模拟的树莓派镜像"><a href="#下载将要模拟的树莓派镜像" class="headerlink" title="下载将要模拟的树莓派镜像"></a>下载将要模拟的树莓派镜像</h2><p>网址：</p>
+<p><a target="_blank" rel="noopener" href="https://downloads.raspberrypi.org/raspios_full_armhf/images/raspios_full_armhf-2021-01-12/">https://downloads.raspberrypi.org/raspios_full_armhf/images/raspios_full_armhf-2021-01-12/</a></p>
+<p>我这里下载的是2021-01-11-raspios-buster-armhf-full.zip</p>
+<h1 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h1><h2 id="安装QEMU："><a href="#安装QEMU：" class="headerlink" title="安装QEMU："></a>安装QEMU：</h2><p>双击下载好的QEMU安装程序，按照提示往下进行，默认路径：C:\Program Files\qemu</p>
+<p>将下载好的img镜像文件、kernel和versatile-pb-buster.dtb都拷贝到QEMU的根目录下</p>
+<p>在QEMU根目录打开cmd，输入：（中间不换行）</p>
+<h2 id="方式1："><a href="#方式1：" class="headerlink" title="方式1："></a>方式1：</h2><blockquote>
+<p>qemu-system-arm -kernel kernel-qemu-4.19.50-buster -cpu arm1176 -m 256 -M versatilepb -dtb versatile-pb-buster.dtb -no-reboot -append “root=/dev/sda2 panic=1 rootfstype=ext4 rw” -net nic -net user,hostfwd=tcp::5022-:22 -hda 2021-01-11-raspios-buster-armhf-full.img</p>
+</blockquote>
+<h2 id="方式2："><a href="#方式2：" class="headerlink" title="方式2："></a>方式2：</h2><blockquote>
+<p>qemu-system-arm -kernel kernel-qemu-4.19.50-buster -cpu arm1176 -m 256 -M versatilepb -dtb versatile-pb-buster.dtb -no-reboot -append “root=/dev/sda2 panic=1 rootfstype=ext4 rw” -net nic -net user,hostfwd=tcp::5022-:22 -drive “file=2021-01-11-raspios-buster-armhf-full.img,index=0,media=disk,format=raw”</p>
+</blockquote>
+<p>方式1和方式2分别示范了：-hda和-file 两种方式加载内核镜像，本操作过程改为了-file</p>
+<h2 id="错误1："><a href="#错误1：" class="headerlink" title="错误1："></a>错误1：</h2><blockquote>
+<p><strong>Could not open 2021-01-11-raspios-buster-armhf-full.img +乱码…</strong></p>
+</blockquote>
+<p>不用CMD的控制台（加载镜像使用了-hda），改使用powershell(加载镜像使用-file)，且管理员打开，切换目录到安装qemu的根目录…</p>
+<h2 id="错误2："><a href="#错误2：" class="headerlink" title="错误2："></a>错误2：</h2><blockquote>
+<p>panic=1: Could not open ‘panic=1’: +乱码…</p>
+</blockquote>
+<p>1命令行中两处用双引号，看看是不是中文状态的双引号</p>
+<p>2复制命令行时，两处需要双引号的地方丢失了，补上双引号即可。</p>
+<h2 id="最终修改如下："><a href="#最终修改如下：" class="headerlink" title="最终修改如下："></a>最终修改如下：</h2><blockquote>
+<p>.\qemu-system-arm.exe -kernel kernel-qemu-4.19.50-buster -cpu arm1176 -m 256 -M versatilepb -dtb versatile-pb-buster.dtb -no-reboot -append “root=/dev/sda2 panic=1 rootfstype=ext4 rw” -net nic -net user,hostfwd=tcp::5022-:22 -drive “file=2021-01-11-raspios-buster-armhf-full.img,index=0,media=disk,format=raw”</p>
+</blockquote>
+<p>修改完毕后再执行</p>
+<p><img src="/2021/11/22/%E5%9F%BA%E4%BA%8Ewindows10%E7%B3%BB%E7%BB%9F%E7%94%A8QEMU%E6%A8%A1%E6%8B%9F%E6%A0%91%E8%8E%93%E6%B4%BE/qemu02.png"></p>
+<p>上图中按提示next就可以了。</p>
+<h1 id="网络配置："><a href="#网络配置：" class="headerlink" title="网络配置："></a>网络配置：</h1><p>修改上面的命令行中网络部分内容：</p>
+<blockquote>
+<p>“-net nic -net tap,ifname=tap”</p>
+</blockquote>
+<p>其中，ifname= tap的tap，我用的是虚拟网卡，把他重命名为tap或其他名字(注意区分大小写)。</p>
+<h2 id="虚拟网卡修改名称如下"><a href="#虚拟网卡修改名称如下" class="headerlink" title="虚拟网卡修改名称如下:"></a>虚拟网卡修改名称如下:</h2><p><img src="/2021/11/22/%E5%9F%BA%E4%BA%8Ewindows10%E7%B3%BB%E7%BB%9F%E7%94%A8QEMU%E6%A8%A1%E6%8B%9F%E6%A0%91%E8%8E%93%E6%B4%BE/qemu03.png"></p>
+<h2 id="设置tap的地址："><a href="#设置tap的地址：" class="headerlink" title="设置tap的地址："></a>设置tap的地址：</h2><blockquote>
+<p>IP 192.168.200.1</p>
+<p>MASK 255.255.255.0</p>
+<p>GW:192.168.35.254</p>
+<p>DNS 192.168.35.254</p>
+</blockquote>
+<p>忘记截图了修改tap的地址时，同时，说明一下：192.168.35.254是路由器地址。</p>
+<p>选择物理网卡，让tap通过共享物理网卡来上网</p>
+<p>共享时，选择tap即可。</p>
+<p><img src="/2021/11/22/%E5%9F%BA%E4%BA%8Ewindows10%E7%B3%BB%E7%BB%9F%E7%94%A8QEMU%E6%A8%A1%E6%8B%9F%E6%A0%91%E8%8E%93%E6%B4%BE/qemu04.png"></p>
+<p>上面设置完成后，再查看tap的地址：</p>
+<p><img src="/2021/11/22/%E5%9F%BA%E4%BA%8Ewindows10%E7%B3%BB%E7%BB%9F%E7%94%A8QEMU%E6%A8%A1%E6%8B%9F%E6%A0%91%E8%8E%93%E6%B4%BE/qemu05.png"></p>
+<p>WIN10自动将tap的IP修改了，如上图所示。</p>
+<h2 id="再次启动虚拟机："><a href="#再次启动虚拟机：" class="headerlink" title="再次启动虚拟机："></a>再次启动虚拟机：</h2><blockquote>
+<p>.\qemu-system-arm.exe -kernel kernel-qemu-4.19.50-buster -cpu arm1176 -m 256 -M versatilepb -dtb versatile-pb-buster.dtb -no-reboot -append “root=/dev/sda2 panic=1 rootfstype=ext4 rw” -net nic -net tap,ifname=tap -drive “file=2021-01-11-raspios-buster-armhf-full.img,index=0,media=disk,format=raw”</p>
+</blockquote>
+<h1 id="进入树莓派："><a href="#进入树莓派：" class="headerlink" title="进入树莓派："></a>进入树莓派：</h1><h2 id="查看IP"><a href="#查看IP" class="headerlink" title="查看IP:"></a>查看IP:</h2><p>使用ifconfig查看，是DHCP自动分配的如下：</p>
+<p><img src="/2021/11/22/%E5%9F%BA%E4%BA%8Ewindows10%E7%B3%BB%E7%BB%9F%E7%94%A8QEMU%E6%A8%A1%E6%8B%9F%E6%A0%91%E8%8E%93%E6%B4%BE/qemu06.png"></p>
+<h2 id="树莓派ping主机："><a href="#树莓派ping主机：" class="headerlink" title="树莓派ping主机："></a>树莓派ping主机：</h2><p><img src="/2021/11/22/%E5%9F%BA%E4%BA%8Ewindows10%E7%B3%BB%E7%BB%9F%E7%94%A8QEMU%E6%A8%A1%E6%8B%9F%E6%A0%91%E8%8E%93%E6%B4%BE/qemu07.png"></p>
+<h2 id="主机ping树莓派"><a href="#主机ping树莓派" class="headerlink" title="主机ping树莓派"></a>主机ping树莓派</h2><p><img src="/2021/11/22/%E5%9F%BA%E4%BA%8Ewindows10%E7%B3%BB%E7%BB%9F%E7%94%A8QEMU%E6%A8%A1%E6%8B%9F%E6%A0%91%E8%8E%93%E6%B4%BE/qemu08.png"></p>
+<p>OK,大功告成！</p>
+<h1 id="补充："><a href="#补充：" class="headerlink" title="补充："></a>补充：</h1><h2 id="树莓派中使用root："><a href="#树莓派中使用root：" class="headerlink" title="树莓派中使用root："></a>树莓派中使用root：</h2><p>sudo su root即可。</p>
+<h2 id="树莓派修改静态IP如下："><a href="#树莓派修改静态IP如下：" class="headerlink" title="树莓派修改静态IP如下："></a>树莓派修改静态IP如下：</h2><p>Ip地址192.168.137.xxx</p>
+<p>网关：tap的ip地址192.168.137.1</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/qemu/" rel="tag"># qemu</a>
+              <a href="/tags/%E6%A0%91%E8%8E%93%E6%B4%BE/" rel="tag"># 树莓派</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/11/16/vscode+qemu%E8%B0%83%E8%AF%95%20RT-THREAD%E6%97%B6%E5%BC%82%E5%B8%B8%EF%BC%9Artthread.elf%20has%20exited%20with%20code%2042/" rel="prev" title="vscode+qemu调试 RT-THREAD时异常：rtthread.elf has exited with code 42">
+      <i class="fa fa-chevron-left"></i> vscode+qemu调试 RT-THREAD时异常：rtthread.elf has exited with code 42
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%89%8D%E8%A8%80%EF%BC%9A"><span class="nav-number">1.</span> <span class="nav-text">前言：</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%87%86%E5%A4%87%E5%B7%A5%E4%BD%9C%EF%BC%9A"><span class="nav-number">2.</span> <span class="nav-text">准备工作：</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%8B%E8%BD%BDQEMU%EF%BC%9A"><span class="nav-number">2.1.</span> <span class="nav-text">下载QEMU：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%8B%E8%BD%BDkernel-qemu"><span class="nav-number">2.2.</span> <span class="nav-text">下载kernel-qemu</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%8B%E8%BD%BD%E5%B0%86%E8%A6%81%E6%A8%A1%E6%8B%9F%E7%9A%84%E6%A0%91%E8%8E%93%E6%B4%BE%E9%95%9C%E5%83%8F"><span class="nav-number">2.3.</span> <span class="nav-text">下载将要模拟的树莓派镜像</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8"><span class="nav-number">3.</span> <span class="nav-text">使用</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85QEMU%EF%BC%9A"><span class="nav-number">3.1.</span> <span class="nav-text">安装QEMU：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%96%B9%E5%BC%8F1%EF%BC%9A"><span class="nav-number">3.2.</span> <span class="nav-text">方式1：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%96%B9%E5%BC%8F2%EF%BC%9A"><span class="nav-number">3.3.</span> <span class="nav-text">方式2：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%94%99%E8%AF%AF1%EF%BC%9A"><span class="nav-number">3.4.</span> <span class="nav-text">错误1：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%94%99%E8%AF%AF2%EF%BC%9A"><span class="nav-number">3.5.</span> <span class="nav-text">错误2：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%80%E7%BB%88%E4%BF%AE%E6%94%B9%E5%A6%82%E4%B8%8B%EF%BC%9A"><span class="nav-number">3.6.</span> <span class="nav-text">最终修改如下：</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE%EF%BC%9A"><span class="nav-number">4.</span> <span class="nav-text">网络配置：</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%99%9A%E6%8B%9F%E7%BD%91%E5%8D%A1%E4%BF%AE%E6%94%B9%E5%90%8D%E7%A7%B0%E5%A6%82%E4%B8%8B"><span class="nav-number">4.1.</span> <span class="nav-text">虚拟网卡修改名称如下:</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%BE%E7%BD%AEtap%E7%9A%84%E5%9C%B0%E5%9D%80%EF%BC%9A"><span class="nav-number">4.2.</span> <span class="nav-text">设置tap的地址：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%86%8D%E6%AC%A1%E5%90%AF%E5%8A%A8%E8%99%9A%E6%8B%9F%E6%9C%BA%EF%BC%9A"><span class="nav-number">4.3.</span> <span class="nav-text">再次启动虚拟机：</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%BF%9B%E5%85%A5%E6%A0%91%E8%8E%93%E6%B4%BE%EF%BC%9A"><span class="nav-number">5.</span> <span class="nav-text">进入树莓派：</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9F%A5%E7%9C%8BIP"><span class="nav-number">5.1.</span> <span class="nav-text">查看IP:</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A0%91%E8%8E%93%E6%B4%BEping%E4%B8%BB%E6%9C%BA%EF%BC%9A"><span class="nav-number">5.2.</span> <span class="nav-text">树莓派ping主机：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%BB%E6%9C%BAping%E6%A0%91%E8%8E%93%E6%B4%BE"><span class="nav-number">5.3.</span> <span class="nav-text">主机ping树莓派</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%A1%A5%E5%85%85%EF%BC%9A"><span class="nav-number">6.</span> <span class="nav-text">补充：</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A0%91%E8%8E%93%E6%B4%BE%E4%B8%AD%E4%BD%BF%E7%94%A8root%EF%BC%9A"><span class="nav-number">6.1.</span> <span class="nav-text">树莓派中使用root：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A0%91%E8%8E%93%E6%B4%BE%E4%BF%AE%E6%94%B9%E9%9D%99%E6%80%81IP%E5%A6%82%E4%B8%8B%EF%BC%9A"><span class="nav-number">6.2.</span> <span class="nav-text">树莓派修改静态IP如下：</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Armoon"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Armoon</p>
+  <div class="site-description" itemprop="description">把酒长亭杯已空,行人车马各西东。 枫林不共斜阳去,自向荒郊寂寞红。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">17</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">28</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Armoon</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
