@@ -1,0 +1,1348 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"fivexxxxx.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false,"b2t":false,"scollpercent":true},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="说明：QEMU,它是一个开源的可执行硬件虚拟化的托管虚拟机，可以虚拟出甚至cortex A的开发板，提供必备的外设：串口等等，几乎可以实现在线学习arm开发，因此，在没有开发板的情况下，也可以玩转ARM。开始前，那就得有环境呀，so,开始吧。 环境准备：Oracle VM VirtualBox Ubuntu20.04">
+<meta property="og:type" content="article">
+<meta property="og:title" content="基于ubuntu20.04和qemu完成u-boot引导linux kernel笔记">
+<meta property="og:url" content="https://fivexxxxx.github.io/2021/12/06/%E5%9F%BA%E4%BA%8Eubuntu20.04%E5%92%8Cqemu%E5%AE%8C%E6%88%90u-boot%E5%BC%95%E5%AF%BClinux%20kernel%E7%AC%94%E8%AE%B0/index.html">
+<meta property="og:site_name" content="Armoon的一亩三分自留地">
+<meta property="og:description" content="说明：QEMU,它是一个开源的可执行硬件虚拟化的托管虚拟机，可以虚拟出甚至cortex A的开发板，提供必备的外设：串口等等，几乎可以实现在线学习arm开发，因此，在没有开发板的情况下，也可以玩转ARM。开始前，那就得有环境呀，so,开始吧。 环境准备：Oracle VM VirtualBox Ubuntu20.04">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2021-12-06T07:09:04.568Z">
+<meta property="article:modified_time" content="2021-12-06T08:39:16.197Z">
+<meta property="article:author" content="Armoon">
+<meta property="article:tag" content="ARM">
+<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="qemu">
+<meta property="article:tag" content="u-boot">
+<meta property="article:tag" content="virtualBOX">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://fivexxxxx.github.io/2021/12/06/%E5%9F%BA%E4%BA%8Eubuntu20.04%E5%92%8Cqemu%E5%AE%8C%E6%88%90u-boot%E5%BC%95%E5%AF%BClinux%20kernel%E7%AC%94%E8%AE%B0/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>基于ubuntu20.04和qemu完成u-boot引导linux kernel笔记 | Armoon的一亩三分自留地</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Armoon的一亩三分自留地</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">记录生活的点点滴滴</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签<span class="badge">30</span></a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类<span class="badge">11</span></a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档<span class="badge">18</span></a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://fivexxxxx.github.io/2021/12/06/%E5%9F%BA%E4%BA%8Eubuntu20.04%E5%92%8Cqemu%E5%AE%8C%E6%88%90u-boot%E5%BC%95%E5%AF%BClinux%20kernel%E7%AC%94%E8%AE%B0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Armoon">
+      <meta itemprop="description" content="把酒长亭杯已空,行人车马各西东。 枫林不共斜阳去,自向荒郊寂寞红。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Armoon的一亩三分自留地">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          基于ubuntu20.04和qemu完成u-boot引导linux kernel笔记
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2021-12-06 15:09:04 / 修改时间：16:39:16" itemprop="dateCreated datePublished" datetime="2021-12-06T15:09:04+08:00">2021-12-06</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/" itemprop="url" rel="index"><span itemprop="name">嵌入式</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="说明："><a href="#说明：" class="headerlink" title="说明："></a>说明：</h2><p>QEMU,它是一个开源的可执行硬件虚拟化的托管虚拟机，可以虚拟出甚至cortex A的开发板，提供必备的外设：串口等等，几乎可以实现在线学习arm开发，因此，在没有开发板的情况下，也可以玩转ARM。<br>开始前，那就得有环境呀，so,开始吧。</p>
+<h1 id="环境准备："><a href="#环境准备：" class="headerlink" title="环境准备："></a>环境准备：</h1><p>Oracle VM VirtualBox</p>
+<p>Ubuntu20.04</p>
+<span id="more"></span>
+<h1 id="材料准备："><a href="#材料准备：" class="headerlink" title="材料准备："></a>材料准备：</h1><h2 id="安装-vim"><a href="#安装-vim" class="headerlink" title="安装 vim"></a>安装 vim</h2><blockquote>
+<p>sudo apt-get install vim</p>
+</blockquote>
+<h2 id="git安装："><a href="#git安装：" class="headerlink" title="git安装："></a>git安装：</h2><blockquote>
+<p>apt install git</p>
+</blockquote>
+<h2 id="make安装："><a href="#make安装：" class="headerlink" title="make安装："></a>make安装：</h2><blockquote>
+<p>sudo apt install make</p>
+<p>sudo apt-get install libncurses5-dev libncursesw5-dev //支持make menuconfig图形化配置</p>
+</blockquote>
+<h2 id="安装ARM-Linux-GCC工具链"><a href="#安装ARM-Linux-GCC工具链" class="headerlink" title="安装ARM-Linux-GCC工具链"></a>安装ARM-Linux-GCC工具链</h2><blockquote>
+<p>sudo apt-get install gcc-arm-linux-gnueabi</p>
+</blockquote>
+<h2 id="安装uboot工具"><a href="#安装uboot工具" class="headerlink" title="安装uboot工具"></a>安装uboot工具</h2><blockquote>
+<p>sudo apt install u-boot-tools</p>
+</blockquote>
+<h2 id="安装qume模拟器："><a href="#安装qume模拟器：" class="headerlink" title="安装qume模拟器："></a>安装qume模拟器：</h2><blockquote>
+<p>sudo apt install qemu-system-arm</p>
+</blockquote>
+<p>查看版本：</p>
+<pre><code># qemu-system-arm --version    
+QEMU emulator version 4.2.1 (Debian 1:4.2-3ubuntu6.18)
+Copyright (c) 2003-2019 Fabrice Bellard and the QEMU Project developers
+</code></pre>
+<h2 id="git下载linux内核源码"><a href="#git下载linux内核源码" class="headerlink" title="git下载linux内核源码"></a>git下载linux内核源码</h2><blockquote>
+<p>pwd&gt; </p>
+<p>/home/qemu-linux-kits</p>
+</blockquote>
+<blockquote>
+<p>git clone git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git</p>
+</blockquote>
+<p>官网下载经常速度太慢，无法下载，提供另一个链接：</p>
+<p><a target="_blank" rel="noopener" href="http://ftp.sjtu.edu.cn/sites/ftp.kernel.org/pub/linux/kernel/">http://ftp.sjtu.edu.cn/sites/ftp.kernel.org/pub/linux/kernel/</a></p>
+<h2 id="git下载u-boot源码："><a href="#git下载u-boot源码：" class="headerlink" title="git下载u-boot源码："></a>git下载u-boot源码：</h2><pre><code>pwd
+/home/qemu-linux-kits    
+git clone git://git.denx.de/u-boot.git u-boot
+</code></pre>
+<h2 id="busybox网站："><a href="#busybox网站：" class="headerlink" title="busybox网站："></a>busybox网站：</h2><blockquote>
+<p><a target="_blank" rel="noopener" href="https://busybox.net/source.html">https://busybox.net/source.html</a></p>
+</blockquote>
+<h2 id="git下载busybox源码："><a href="#git下载busybox源码：" class="headerlink" title="git下载busybox源码："></a>git下载busybox源码：</h2><pre><code>pwd
+/home/qemu-linux-kits
+git clone git://busybox.net/busybox.git
+</code></pre>
+<h2 id="切换到稳定版本："><a href="#切换到稳定版本：" class="headerlink" title="切换到稳定版本："></a>切换到稳定版本：</h2><pre><code>git checkout remotes/origin/1_NN_stable
+</code></pre>
+<h2 id="更新源码到最新："><a href="#更新源码到最新：" class="headerlink" title="更新源码到最新："></a>更新源码到最新：</h2><pre><code>git pull
+</code></pre>
+<p>注：后两步没成功</p>
+<p><strong>准备工作完成。</strong></p>
+<h1 id="开始工作："><a href="#开始工作：" class="headerlink" title="开始工作："></a>开始工作：</h1><h2 id="解压linux内核"><a href="#解压linux内核" class="headerlink" title="解压linux内核"></a>解压linux内核</h2><pre><code>tar -zxvf linux-4.17.tar.gz
+cd linux-4.17
+</code></pre>
+<p>修改Makefile文件：大概324行</p>
+<pre><code>ARCH?= $(SUBARCH)
+
+CROSS_COMPILE   ?= $(CONFIG_CROSS_COMPILE:&quot;%&quot;=%)
+</code></pre>
+<p><strong>修改为：</strong></p>
+<pre><code>ARCH ?= arm
+
+CROSS_COMPILE ?= arm-linux-gnueabi-
+</code></pre>
+<h2 id="注："><a href="#注：" class="headerlink" title="注："></a>注：</h2><blockquote>
+<p>vim中查找字符串，命令状态下：/要查找字符+回车+n</p>
+</blockquote>
+<h2 id="配置对应的开发板"><a href="#配置对应的开发板" class="headerlink" title="配置对应的开发板"></a>配置对应的开发板</h2><p>这里用的是vexpress-a9，如下：</p>
+<pre><code>make vexpress_defconfig
+</code></pre>
+<p>报了个错：</p>
+<blockquote>
+<p>make: *** arch/arm: Is a directory.  Stop.</p>
+</blockquote>
+<p>原因：<br>修改时Makefile中ARCH=arm这一句后面多了两个空格，删除即可。<br>不修改Makefile文件，可以外面指定如下：</p>
+<blockquote>
+<p>make ARCH=arm CROSS_COMPILE=arm-linux-gnueabi-</p>
+</blockquote>
+<h1 id="编译zImage，module以及dtb："><a href="#编译zImage，module以及dtb：" class="headerlink" title="编译zImage，module以及dtb："></a>编译zImage，module以及dtb：</h1><h2 id="make-zImage"><a href="#make-zImage" class="headerlink" title="make zImage"></a>make zImage</h2><p>  CC  arch/arm/boot/compressed/misc.o</p>
+<p>  CC  arch/arm/boot/compressed/decompress.o</p>
+<p>  CC  arch/arm/boot/compressed/string.o</p>
+<p>  AS  arch/arm/boot/compressed/hyp-stub.o</p>
+<p>  AS  arch/arm/boot/compressed/lib1funcs.o</p>
+<p>  AS  arch/arm/boot/compressed/ashldi3.o</p>
+<p>  AS  arch/arm/boot/compressed/bswapsdi2.o</p>
+<p>  LD  arch/arm/boot/compressed/vmlinux</p>
+<p>  OBJCOPY arch/arm/boot/zImage</p>
+<p>  Kernel: arch/arm/boot/zImage is ready</p>
+<p>zImage生成路径：</p>
+<blockquote>
+<p>arch/arm/boot/zImage</p>
+</blockquote>
+<h2 id="make-modules"><a href="#make-modules" class="headerlink" title="make modules"></a>make modules</h2><p>  LD [M]  crypto/hmac.ko</p>
+<p>  CC  crypto/jitterentropy_rng.mod.o</p>
+<p>  LD [M]  crypto/jitterentropy_rng.ko</p>
+<p>  CC  crypto/sha256_generic.mod.o</p>
+<p>  LD [M]  crypto/sha256_generic.ko</p>
+<p>  CC  drivers/video/backlight/lcd.mod.o</p>
+<p>  LD [M]  drivers/video/backlight/lcd.ko</p>
+<p>modules生成路径：</p>
+<blockquote>
+<p>drivers/video/backlight/*.ko</p>
+</blockquote>
+<h2 id="make-dtbs"><a href="#make-dtbs" class="headerlink" title="make dtbs"></a>make dtbs</h2><p>CHK include/config/kernel.release</p>
+<p>  CHK include/generated/uapi/linux/version.h</p>
+<p>  CHK include/generated/utsrelease.h</p>
+<p>  CHK include/generated/bounds.h</p>
+<p>  CHK include/generated/timeconst.h</p>
+<p>  CHK include/generated/asm-offsets.h</p>
+<p>  CALLscripts/checksyscalls.sh</p>
+<p>  CHK scripts/mod/devicetable-offsets.h</p>
+<p>  DTC arch/arm/boot/dts/vexpress-v2p-ca5s.dtb</p>
+<p>  DTC arch/arm/boot/dts/vexpress-v2p-ca9.dtb</p>
+<p>  DTC arch/arm/boot/dts/vexpress-v2p-ca15-tc1.dtb</p>
+<p>  DTC arch/arm/boot/dts/vexpress-v2p-ca15_a7.dtb</p>
+<p>dtbs生成路径：</p>
+<blockquote>
+<p>arch/arm/boot/dts/vexpress-v2p-ca9.dtb</p>
+</blockquote>
+<h1 id="busybox制作根文件系统"><a href="#busybox制作根文件系统" class="headerlink" title="busybox制作根文件系统"></a>busybox制作根文件系统</h1><pre><code>cd busybox/
+</code></pre>
+<p>修改Makefile，新的busybox的makefile下面的选项是空配置的，需要修改如下：</p>
+<pre><code>CROSS_COMPILE ?= arm-linux-gnueabi-
+ARCH ?= arm
+</code></pre>
+<h2 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h2><p>make defconfig或者make menuconfig<br>生成.config文件</p>
+<pre><code>/busybox# ls -al .config
+-rw-r--r-- 1 root root 29073 12月  4 13:45 .config
+</code></pre>
+<h2 id="编译-amp-amp-安装"><a href="#编译-amp-amp-安装" class="headerlink" title="编译 &amp;&amp; 安装"></a>编译 &amp;&amp; 安装</h2><h2 id="make"><a href="#make" class="headerlink" title="make"></a>make</h2><p>输出结果：</p>
+<blockquote>
+<p>…</p>
+<p>LINKbusybox_unstripped</p>
+<p>Trying libraries: m resolv rt</p>
+<p>  DOC busybox.1</p>
+<p>  DOC BusyBox.html</p>
+</blockquote>
+<h2 id="make-install"><a href="#make-install" class="headerlink" title="make install"></a>make install</h2><p>输出结果：</p>
+<pre><code>..
+ ./_install//usr/sbin/udhcpd -&gt; ../../bin/busybox
+
+
+--------------------------------------------------
+You will probably need to make your busybox binary
+setuid root to ensure all configured applets will
+work properly.
+--------------------------------------------------
+</code></pre>
+<p>生成的的_install文件如下，包含了各种shell命令</p>
+<pre><code>/busybox# ls -al ./_install/
+total 20
+drwxr-xr-x  5 root root 4096 12月  4 13:56 .
+drwxr-xr-x 38 root root 4096 12月  4 13:56 ..
+drwxr-xr-x  2 root root 4096 12月  4 13:56 bin
+lrwxrwxrwx  1 root root   11 12月  4 13:56 linuxrc -&gt; bin/busybox
+drwxr-xr-x  2 root root 4096 12月  4 13:56 sbin
+drwxr-xr-x  4 root root 4096 12月  4 13:56 usr
+</code></pre>
+<h1 id="制作根文件系统"><a href="#制作根文件系统" class="headerlink" title="制作根文件系统"></a>制作根文件系统</h1><pre><code>pwd
+/home/qemu-linux-kits
+</code></pre>
+<p>新建根目录：</p>
+<pre><code>root@ibm:/home/qemu-linux-kits# mkdir trainning
+root@ibm:/home/qemu-linux-kits# cd trainning/
+root@ibm:/home/qemu-linux-kits/trainning# mkdir rootfs
+root@ibm:/home/qemu-linux-kits/trainning# cd rootfs/
+root@ibm:/home/qemu-linux-kits/trainning/rootfs# mkdir lib
+root@ibm:/home/qemu-linux-kits/trainning/rootfs# ls
+lib
+</code></pre>
+<p>拷贝库文件：</p>
+<pre><code>root@ibm:/home/qemu-linux-kits/trainning/rootfs# cp -r ../../busybox/_install/* ./
+root@ibm:/home/qemu-linux-kits/trainning/rootfs# ls
+bin  lib  linuxrc  sbin  usr
+</code></pre>
+<p>文件系统运行在arm平台，因此还需要arm-linux-gnueabi的库</p>
+<pre><code>root@ibm:/home/qemu-linux-kits/trainning/rootfs# cp -p /usr/arm-linux-gnueabi/lib/* ./lib
+
+root@ibm:/home/qemu-linux-kits/trainning/rootfs# ls ./lib/
+crt1.o   libgomp.so.1libnss_nis.so.2
+...
+libgcc_s.so.1libnss_nis.so   Scrt1.o
+</code></pre>
+<p>创建设备文件</p>
+<pre><code>/home/qemu-linux-kits/trainning/rootfs
+
+mkdir dev
+root@ibm:/home/qemu-linux-kits/trainning/rootfs# ls
+bin  dev  lib  linuxrc  sbin  usr
+</code></pre>
+<p>创建4个串口设备</p>
+<pre><code>pwd
+/home/qemu-linux-kits/trainning/rootfs/dev
+
+root@ibm:/home/qemu-linux-kits/trainning/rootfs/dev# sudo mknod -m 666 tty1 c 4 1
+root@ibm:/home/qemu-linux-kits/trainning/rootfs/dev# sudo mknod -m 666 tty2 c 4 2
+root@ibm:/home/qemu-linux-kits/trainning/rootfs/dev# sudo mknod -m 666 tty3 c 4 3
+root@ibm:/home/qemu-linux-kits/trainning/rootfs/dev# sudo mknod -m 666 tty4 c 4 4
+</code></pre>
+<p>创建控制台</p>
+<pre><code>sudo mknod -m 666 console c 5 1
+</code></pre>
+<p>创建null</p>
+<pre><code>sudo mknod -m 666 null c 1 3
+
+pwd
+/home/qemu-linux-kits/trainning/rootfs/dev
+
+ls
+console  null  tty1  tty2  tty3  tty4
+</code></pre>
+<h2 id="制作SD根文件系统镜像"><a href="#制作SD根文件系统镜像" class="headerlink" title="制作SD根文件系统镜像"></a>制作SD根文件系统镜像</h2><pre><code>pwd
+/home/qemu-linux-kits/trainning
+
+root@ibm:/home/qemu-linux-kits/trainning# dd if=/dev/zero of=rootfs.ext3 bs=1M count=64
+32+0 records in
+32+0 records out
+33554432 bytes (34 MB, 32 MiB) copied, 0.214002 s, 157 MB/s
+
+
+root@ibm:/home/qemu-linux-kits/trainning# mkfs.ext3 rootfs.ext3 
+mke2fs 1.45.5 (07-Jan-2020)
+Discarding device blocks: done
+Creating filesystem with 8192 4k blocks and 8192 inodes
+
+Allocating group tables: done
+Writing inode tables: done
+Creating journal (1024 blocks): done
+Writing superblocks and filesystem accounting information: done
+</code></pre>
+<p>将虚拟sd卡挂载到/mnt，拷贝rootfs的所有文件到sd，卸载sd(块设备不能直接读写)</p>
+<pre><code>pwd
+/home/qemu-linux-kits/trainning
+mount -t ext3 rootfs.ext3 /mnt/ -o loop
+cp -r rootfs/* /mnt
+ls /mnt/
+bin  dev  lib  linuxrc  lost+found  sbin  usr
+umount /mnt
+</code></pre>
+<p>启动内核，挂载rootfs</p>
+<pre><code>pwd
+/home/qemu-linux-kits/trainning
+</code></pre>
+<h2 id="无LCD启动："><a href="#无LCD启动：" class="headerlink" title="无LCD启动："></a>无LCD启动：</h2><p><code>qemu-system-arm -M vexpress-a9 -m 512M -dtb ../linux-4.17/arch/arm/boot/dts/vexpress-v2p-ca9.dtb -kernel ../linux-4.17/arch/arm/boot/zImage -nographic -append &quot;root=/dev/mmcblk0 rw console=ttyAMA0&quot; -sd rootfs.ext3</code> </p>
+<p>打印结果如下：</p>
+<pre><code>Booting Linux on physical CPU 0x0
+Linux version 4.17.0 (root@ibm) (gcc version 9.3.0 (Ubuntu 9.3.0-17ubuntu1~20.04)) #1 SMP Sat Dec 4 08:50:17 CST 2021
+CPU: ARMv7 Processor [410fc090] revision 0 (ARMv7), cr=10c5387d
+CPU: PIPT / VIPT nonaliasing data cache, VIPT nonaliasing instruction cache
+OF: fdt: Machine model: V2P-CA9
+Memory policy: Data cache writeback
+CPU: All CPU(s) started in SVC mode.
+random: get_random_bytes called from start_kernel+0x9c/0x478 with crng_init=0
+percpu: Embedded 16 pages/cpu @(ptrval) s36364 r8192 d20980 u65536
+Built 1 zonelists, mobility grouping on.  Total pages: 130048
+Kernel command line: root=/dev/mmcblk0 rw console=ttyAMA0
+
+...
+EXT4-fs (mmcblk0): mounting ext3 file system using the ext4 subsystem
+random: fast init done
+EXT4-fs (mmcblk0): mounted filesystem with ordered data mode. Opts: (null)
+VFS: Mounted root (ext3 filesystem) on device 179:0.
+Freeing unused kernel memory: 1024K
+random: crng init done
+***can&#39;t run &#39;/etc/init.d/rcS&#39;: No such file or directory***
+
+
+Please press Enter to activate this console. 
+/ # ls
+bin lib lost+found  usr
+dev linuxrc sbin
+/ # 
+</code></pre>
+<p>注意上面的错误提示</p>
+<h2 id="有LCD启动："><a href="#有LCD启动：" class="headerlink" title="有LCD启动："></a>有LCD启动：</h2><blockquote>
+<p>qemu-system-arm -M vexpress-a9 -m 512M -dtb ../linux-4.17/arch/arm/boot/dts/vexpress-v2p-ca9.dtb -kernel ../linux-4.17/arch/arm/boot/zImage -append “root=/dev/mmcblk0 rw console=tty0” -sd rootfs.ext3</p>
+</blockquote>
+<h1 id="写测试程序："><a href="#写测试程序：" class="headerlink" title="写测试程序："></a>写测试程序：</h1><p>新建目录：</p>
+<blockquote>
+<p>mkdir ko_prj</p>
+</blockquote>
+<p>进入目录后建立两个文件：分别是hello.c和Makefile</p>
+<pre><code>// hello.c:
+#include &lt;linux/init.h&gt;
+#include &lt;linux/module.h&gt;
+
+static int __init hello_init (void)
+&#123;
+printk (KERN_INFO&quot;[Info]Hello! enter.&quot;);
+return 0;
+&#125;
+module_init (hello_init);
+
+static void __exit hello_exit (void)
+&#123;
+printk (KERN_INFO&quot;[Info]Hello! Exit .&quot;);
+&#125;
+module_exit (hello_exit);
+
+MODULE_AUTHOR (&quot;IBM&quot;);
+MODULE_LICENSE (&quot;GPL v2&quot;);
+MODULE_DESCRIPTION (&quot;A simple test module&quot;);
+MODULE_ALIAS (&quot;hello module&quot;);
+</code></pre>
+<p>makefile文件：</p>
+<pre><code>#Makefile
+KVERS = $(shell uname -r)
+
+# Kernel modules
+obj-m += hello.o
+
+#EXTRA_CFLAGS=-g -O0
+
+build: kernel_modules
+
+kernel_modules:
+make -C /lib/modules/$(KVERS)/build M=$(CURDIR) modules
+
+clean:
+make -C /lib/modules/$(KVERS)/build M=$(CURDIR) clean
+</code></pre>
+<p>编译</p>
+<blockquote>
+<p>make</p>
+</blockquote>
+<p>错误如下：</p>
+<blockquote>
+<p>Makefile:12: *** missing separator (did you mean TAB instead of 8 spaces?).  Stop.</p>
+</blockquote>
+<p>这个错误是tab键缩进时导致的，特别是直接复制过来时要注意。</p>
+<p>修改后继续：</p>
+<pre><code>root@ibm:/home/qemu-linux-kits/ko_prj# make
+make -C /lib/modules/5.8.0-53-generic/build M=/home/qemu-linux-kits/ko_prj modules
+make[1]: Entering directory &#39;/usr/src/linux-headers-5.8.0-53-generic&#39;
+  CC [M]  /home/qemu-linux-kits/ko_prj/hello.o
+  MODPOST /home/qemu-linux-kits/ko_prj/Module.symvers
+  CC [M]  /home/qemu-linux-kits/ko_prj/hello.mod.o
+  LD [M]  /home/qemu-linux-kits/ko_prj/hello.ko
+make[1]: Leaving directory &#39;/usr/src/linux-headers-5.8.0-53-generic&#39;
+
+ls
+hello.c   hello.modhello.mod.o  Makefile   Module.symvers
+hello.ko  hello.mod.c  hello.o  modules.order
+</code></pre>
+<h2 id="查看ko文件类型："><a href="#查看ko文件类型：" class="headerlink" title="查看ko文件类型："></a>查看ko文件类型：</h2><pre><code>readelf -h hello.ko 
+ELF Header:
+  Magic:   7f 45 4c 46 02 01 01 00 00 00 00 00 00 00 00 00 
+  Class: ELF64
+  Data:  2&#39;s complement, little endian
+  Version:   1 (current)
+  OS/ABI:UNIX - System V
+  ABI Version:   0
+  Type:  REL (Relocatable file)
+  Machine:   Advanced Micro Devices X86-64
+  Version:   0x1
+  Entry point address:   0x0
+  Start of program headers:  0 (bytes into file)
+  Start of section headers:  3200 (bytes into file)
+  Flags: 0x0
+  Size of this header:   64 (bytes)
+  Size of program headers:   0 (bytes)
+  Number of program headers: 0
+  Size of section headers:   64 (bytes)
+  Number of section headers: 22
+  Section header string table index: 21
+</code></pre>
+<p>不行啊，不能在ARM板上运行啊<br>重新编译：<br>修改Makefile文件，交叉工具链编译即可如下：</p>
+<pre><code>#Makefile
+#KVERS = $(shell uname -r)
+KDIR=/home/qemu-linux-kits/linux-4.17
+PWD=$(shell pwd)
+# Kernel modules
+obj-m += hello.o
+module-objs = hello.o
+
+ARCH=arm
+CROSS_COMPILE=arm-linux-gnueabi-
+
+CC := $(CROSS_COMPILE)gcc
+LD := $(CROSS_COMPILE)ld
+#EXTRA_CFLAGS=-g -O0
+
+default:
+    make -C $(KDIR) M=$(PWD) modules
+clean:
+    rm -f *.ko *.o *.mod.c *.symvers *.order
+</code></pre>
+<p>再编译一次：</p>
+<blockquote>
+<p>make</p>
+</blockquote>
+<p>查看类型：</p>
+<pre><code>readelf -h hello.ko 
+ELF Header:
+  Magic:   7f 45 4c 46 01 01 01 00 00 00 00 00 00 00 00 00 
+  Class: ELF32
+  Data:  2&#39;s complement, little endian
+  Version:   1 (current)
+  OS/ABI:UNIX - System V
+  ABI Version:   0
+  Type:  REL (Relocatable file)
+  Machine:   ARM
+  Version:   0x1
+  Entry point address:   0x0
+  Start of program headers:  0 (bytes into file)
+  Start of section headers:  60916 (bytes into file)
+  Flags: 0x5000000, Version5 EABI
+  Size of this header:   52 (bytes)
+  Size of program headers:   0 (bytes)
+  Number of program headers: 0
+  Size of section headers:   40 (bytes)
+  Number of section headers: 37
+  Section header string table index: 36
+</code></pre>
+<h2 id="测试KO文件："><a href="#测试KO文件：" class="headerlink" title="测试KO文件："></a>测试KO文件：</h2><p>注：QEMU启动后，再退出QEMU的快捷键：ctrl+a x</p>
+<p>开始测试先在</p>
+<p>rootfs根文件系统下面创建一个test目录用来存放ko文件</p>
+<pre><code>mkdir test_ko
+pwd
+/home/qemu-linux-kits/trainning/rootfs/test_ko
+
+cp /home/qemu-linux-kits/ko_prj/hello.ko ./
+ls
+hello.ko
+</code></pre>
+<p>拷贝rootfs的内容到rootfs.ext3虚拟SD中<br>    pwd<br>    /home/qemu-linux-kits/trainning</p>
+<pre><code>mount -t ext3 rootfs.ext3 /mnt/ -o loop
+cp -r rootfs/* /mnt
+umount /mnt
+</code></pre>
+<h1 id="启动开发板"><a href="#启动开发板" class="headerlink" title="启动开发板"></a>启动开发板</h1><blockquote>
+<p>pwd</p>
+<p>/home/qemu-linux-kits/trainning</p>
+</blockquote>
+<h2 id="无LCD启动：-1"><a href="#无LCD启动：-1" class="headerlink" title="无LCD启动："></a>无LCD启动：</h2><blockquote>
+<p>qemu-system-arm -M vexpress-a9 -m 512M -dtb ../linux-4.17/arch/arm/boot/dts/vexpress-v2p-ca9.dtb -kernel ../linux-4.17/arch/arm/boot/zImage -nographic -append “root=/dev/mmcblk0 rw console=ttyAMA0” -sd rootfs.ext3</p>
+</blockquote>
+<p>打印信息省略…</p>
+<p>注：</p>
+<p><strong>can’t run ‘/etc/init.d/rcS’: No such file or directory</strong><br>说明文件系统还没OK呀</p>
+<pre><code>Please press Enter to activate this console. 
+/ # ls
+bin lib lost+found  test_ko
+dev linuxrc sbinusr
+/ # cd test_ko/
+/test_ko # insmod ./hello.ko 
+hello: loading out-of-tree module taints kernel.
+</code></pre>
+<p>内核树不一样导致上面的问题。</p>
+<p>开发板：</p>
+<pre><code>uname -r
+4.17.0
+</code></pre>
+<p>主机：</p>
+<pre><code>uname -r
+5.8.0-53-generic
+</code></pre>
+<p>对后续的内核insmod并无影响，可以不用管。最好解决方法，可以找两个内核版本一样的。</p>
+<pre><code>test_ko # rmmod hello.ko 
+[Info]Hello! enter.
+/test_ko # insmod hello.ko 
+[Info]Hello! Exit .
+/test_ko # rmmod hello.ko 
+[Info]Hello! enter.
+</code></pre>
+<h2 id="现在开始修复："><a href="#现在开始修复：" class="headerlink" title="现在开始修复："></a>现在开始修复：</h2><p><strong>can’t run ‘/etc/init.d/rcS’: No such file or directory</strong></p>
+<p>进一步完善根文件系统</p>
+<h2 id="创建etc"><a href="#创建etc" class="headerlink" title="创建etc"></a>创建etc</h2><pre><code>mkdir etc
+root@ibm:/home/qemu-linux-kits/trainning/rootfs# cd etc/
+root@ibm:/home/qemu-linux-kits/trainning/rootfs/etc# pwd
+/home/qemu-linux-kits/trainning/rootfs/etc
+</code></pre>
+<h2 id="创建inittab"><a href="#创建inittab" class="headerlink" title="创建inittab"></a>创建inittab</h2><pre><code>::sysinit:/etc/init.d/rcS
+#::respawn:-/bin/sh
+#tty2::askfirst:-/bin/sh
+#::ctrlaltdel:/bin/umount -a -r
+
+console::askfirst:-/bin/sh
+::ctrlaltdel:/sbin/reboot
+::shutdown:/bin/umount -a -r
+</code></pre>
+<h2 id="创建fstab"><a href="#创建fstab" class="headerlink" title="创建fstab"></a>创建fstab</h2><pre><code>proc/proc   procdefaults0   0
+tmpfs   /tmptmpfs   defaults0   0
+sysfs   /syssysfs   defaults0   0
+tmpfs   /devtmpfs   defaults0   0
+var /devtmpfs   defaults0   0
+ramfs   /devramfs   defaults0   0
+</code></pre>
+<h2 id="创建profile"><a href="#创建profile" class="headerlink" title="创建profile"></a>创建profile</h2><pre><code>PS1=&#39;ibm@arm-vexpress:\w # &#39; 
+export PS1
+</code></pre>
+<h2 id="创建init-d-rcS"><a href="#创建init-d-rcS" class="headerlink" title="创建init.d/rcS"></a>创建init.d/rcS</h2><pre><code>#! /bin/sh
+PATH=/sbin:/bin:/usr/sbin:/usr/bin
+LD_LIBRARY_PATH=/lib
+export PATH LD_LIBRARY_PATH
+
+mount -a
+mkdir -p /dev/pts
+mount -t devpts devpts /dev/pts
+mdev -s
+mkdir -p /var/lock
+
+echo &quot;-----------------------------------&quot;
+
+echo &quot; welcome to A9 vexpress board&quot;
+
+echo &quot;-----------------------------------&quot;
+</code></pre>
+<p>用最新的rootfs覆盖rootfs.ext3虚拟SD卡，启动开发板验证</p>
+<pre><code>pwd
+/home/qemu-linux-kits/trainning
+
+mount -t ext3 rootfs.ext3 /mnt/ -o loop
+cp -r rootfs/* /mnt
+umount /mnt
+</code></pre>
+<h2 id="启动开发板-1"><a href="#启动开发板-1" class="headerlink" title="启动开发板"></a>启动开发板</h2><pre><code>pwd
+/home/qemu-linux-kits/trainning
+</code></pre>
+<h2 id="无LCD启动：-2"><a href="#无LCD启动：-2" class="headerlink" title="无LCD启动："></a>无LCD启动：</h2><blockquote>
+<p>qemu-system-arm -M vexpress-a9 -m 512M -dtb ../linux-4.17/arch/arm/boot/dts/vexpress-v2p-ca9.dtb -kernel ../linux-4.17/arch/arm/boot/zImage -nographic -append “root=/dev/mmcblk0 rw console=ttyAMA0” -sd rootfs.ext3</p>
+</blockquote>
+<p>提示一个错误：</p>
+<blockquote>
+<p>can’t run ‘/etc/init.d/rcS’: Permission denied</p>
+</blockquote>
+<p>修改上述文件的权限：<br>chmod 777 xxx  或 chmod +rwx xxx</p>
+<p>重启开发板，新错误：</p>
+<pre><code>random: crng init done
+mount: mounting proc on /proc failed: No such file or directory
+mount: mounting tmpfs on /tmp failed: No such file or directory
+mount: mounting sysfs on /sys failed: No such file or directory
+mdev: /sys/dev: No such file or directory
+-----------------------------------
+ welcome to A9 vexpress board
+-----------------------------------
+can&#39;t open /dev/console: No such file or directory
+can&#39;t open /dev/console: No such file or directory
+can&#39;t open /dev/console: No such file or directory
+QEMU: Terminated
+</code></pre>
+<p>是参考的文档写的不全造成的 如：根文件系统都没有/proc目录</p>
+<p>创建几个目录再：</p>
+<pre><code>pwd
+/home/qemu-linux-kits/trainning/rootfs
+mkdir proc
+mkdir tmp
+mkdir sys
+</code></pre>
+<p>再用最新的rootfs覆盖rootfs.ext3虚拟SD卡，启动开发板验证</p>
+<p>打印信息如此：</p>
+<pre><code>...
+VFS: Mounted root (ext3 filesystem) on device 179:0.
+Freeing unused kernel memory: 1024K
+random: crng init done
+-----------------------------------
+ welcome to A9 vexpress board
+-----------------------------------
+
+Please press Enter to activate this console. 
+</code></pre>
+<p>目前看一切OK啦</p>
+<h1 id="使用u-boot加载linux-kernel"><a href="#使用u-boot加载linux-kernel" class="headerlink" title="使用u-boot加载linux kernel"></a><strong>使用u-boot加载linux kernel</strong></h1><pre><code>pwd
+/home/qemu-linux-kits/u-boot
+</code></pre>
+<p>修改顶层Makefile，指定交叉编译器</p>
+<pre><code>CROSS_COMPILE ?= arm-linux-gnueabi-
+</code></pre>
+<p>修改顶层config.mk，指定ARM架构</p>
+<pre><code>ARCH := arm
+</code></pre>
+<p>配置开发板</p>
+<pre><code>make vexpress_ca9x4_defconfig
+
+  HOSTCC  scripts/basic/fixdep
+  HOSTCC  scripts/kconfig/conf.o
+  YACCscripts/kconfig/zconf.tab.c
+  LEX scripts/kconfig/zconf.lex.c
+  HOSTCC  scripts/kconfig/zconf.tab.o
+  HOSTLD  scripts/kconfig/conf
+#
+# configuration written to .config
+#
+</code></pre>
+<p>编译u-boot</p>
+<pre><code>make –j4
+</code></pre>
+<h2 id="错误："><a href="#错误：" class="headerlink" title="错误："></a>错误：</h2><blockquote>
+<p>cc1: error: bad value (‘generic-armv7-a’) for ‘-mtune=’ switch</p>
+</blockquote>
+<p>错误原因：</p>
+<p>        编译时未明确设置默认交叉编译工具</p>
+<p>解决办法：</p>
+<p>        在Uboot顶层目录下继续修改Makefile</p>
+<pre><code># set default to nothing for native builds
+ifeq ($(HOSTARCH),$(ARCH))
+CROSS_COMPILE ?=arm-linux-gnueabi-
+endif
+ARCH = arm
+CROSS_COMPILE ?=arm-linux-gnueabi-         #增加了两行（本行+上1行）
+KCONFIG_CONFIG  ?= .config
+export KCONFIG_CONFIG
+</code></pre>
+<p>编译结果：</p>
+<pre><code>AR  lib/built-in.o
+  LD  u-boot
+  OBJCOPY u-boot.srec
+  OBJCOPY u-boot-nodtb.bin
+  SYM u-boot.sym
+  COPYu-boot.bin
+</code></pre>
+<h2 id="运行u-boot"><a href="#运行u-boot" class="headerlink" title="运行u-boot"></a>运行u-boot</h2><pre><code>pwd
+/home/qemu-linux-kits/u-boot
+
+qemu-system-arm -M vexpress-a9 -kernel u-boot -nographic -m 512M
+</code></pre>
+<p>输出：</p>
+<pre><code>U-Boot 2022.01-rc3-00015-g5b9ee01685-dirty (Dec 05 2021 - 08:46:08 +0800)
+
+DRAM:  512 MiB
+WARNING: Caches not enabled
+Flash: 64 MiB
+MMC:   mmci@5000: 0
+Loading Environment from Flash... *** Warning - bad CRC, using default environment
+
+In:serial
+Out:   serial
+Err:   serial
+Net:   eth0: ethernet@3,02000000
+
+...
+
+Usage:
+cp [.b, .w, .l, .q] source target count
+Wrong Image Format for bootm command
+ERROR: can&#39;t get kernel image!
+=&gt; QEMU: Terminated
+</code></pre>
+<p>退出QEMU快捷键：ctrl+a x</p>
+<p>看到上面打印信息，说明 U-boot启动正常，但要用u-boot引导内核启动，先要搞定网络…</p>
+<h1 id="配置QEMU的网络功能"><a href="#配置QEMU的网络功能" class="headerlink" title="配置QEMU的网络功能"></a>配置QEMU的网络功能</h1><p>采用桥接(bridge)的网络连接与Host通信，需要主机内核tun/tap模块支持(linux17.04以后的版本都支持了，不支持的老版本需要自己创建，我安装的ubuntu是20.04，故已经有了这个模块)</p>
+<pre><code>root@ibm:/home/qemu-linux-kits/u-boot# ls /dev/net/
+tun
+</code></pre>
+<h2 id="主机安装工具包："><a href="#主机安装工具包：" class="headerlink" title="主机安装工具包："></a>主机安装工具包：</h2><p>UML（User-mode linux）工具</p>
+<p>虚拟网桥工具</p>
+<pre><code>apt install uml-utilities bridge-utils
+</code></pre>
+<p>查看一下当前状况：</p>
+<pre><code>ifconfig
+enp0s3: flags=4163&lt;UP,BROADCAST,RUNNING,MULTICAST&gt;  mtu 1500
+inet 192.168.35.20  netmask 255.255.255.0  broadcast 192.168.35.255
+inet6 fe80::a00:27ff:fe1d:36fb  prefixlen 64  scopeid 0x20&lt;link&gt;
+ether 08:00:27:1d:36:fb  txqueuelen 1000  (Ethernet)
+RX packets 2830352  bytes 2300177102 (2.3 GB)
+RX errors 0  dropped 0  overruns 0  frame 0
+TX packets 1702820  bytes 311586256 (311.5 MB)
+TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+lo: flags=73&lt;UP,LOOPBACK,RUNNING&gt;  mtu 65536
+inet 127.0.0.1  netmask 255.0.0.0
+inet6 ::1  prefixlen 128  scopeid 0x10&lt;host&gt;
+loop  txqueuelen 1000  (Local Loopback)
+RX packets 66060  bytes 10916745 (10.9 MB)
+RX errors 0  dropped 0  overruns 0  frame 0
+TX packets 66060  bytes 10916745 (10.9 MB)
+TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+</code></pre>
+<h2 id="配网桥："><a href="#配网桥：" class="headerlink" title="配网桥："></a>配网桥：</h2><p>参考：<br><a target="_blank" rel="noopener" href="https://www.codenong.com/cs109845929/">https://www.codenong.com/cs109845929/</a></p>
+<pre><code>root@ibm:/# ifconfig enp0s3 down    # 首先关闭宿主机网卡接口
+root@ibm:/# brctl addbr br0        # 添加一座名为 br0 的网桥
+root@ibm:/# brctl addif br0 enp0s3        # 在 br0 中添加一个接口
+root@ibm:/# brctl stp br0 off        # 如果只有一个网桥，则关闭生成树协议
+root@ibm:/# brctl setfd br0 1        # 设置 br0 的转发延迟
+root@ibm:/# brctl sethello br0 1        # 设置 br0 的 hello 时间
+root@ibm:/# ifconfig br0 0.0.0.0  promisc up    # 启用 br0 接口
+root@ibm:/# ifconfig enp0s3 0.0.0.0 promisc up         # 启用网卡接口
+root@ibm:/# dhclient br0        # 从 dhcp 服务器获得 br0 的 IP 地址
+root@ibm:/# brctl show br0        # 查看虚拟网桥列表
+bridge name    bridge id        STP enabled    interfaces
+br0        8000.0800271d36fb    no        enp0s3
+root@ibm:/# brctl showstp br0        # 查看 br0 的各接口信息
+br0
+ bridge id        8000.0800271d36fb
+ designated root    8000.0800271d36fb
+ root port           0            path cost           0
+ max age          20.00            bridge max age          20.00
+ hello time           1.00            bridge hello time       1.00
+ forward delay           1.00            bridge forward delay       1.00
+ ageing time         300.00
+ hello timer           0.00            tcn timer           0.00
+ topology change timer       0.00            gc timer         225.02
+ flags            
+
+
+enp0s3 (1)
+ port id        8001            state         forwarding
+ designated root    8000.0800271d36fb    path cost           4
+ designated bridge    8000.0800271d36fb    message age timer       0.00
+ designated port    8001            forward delay timer       0.00
+ designated cost       0            hold timer           0.00
+ flags            
+</code></pre>
+<p>查看一下当前的状态：</p>
+<pre><code>root@ibm:/# ifconfig
+br0: flags=4419&lt;UP,BROADCAST,RUNNING,PROMISC,MULTICAST&gt;  mtu 1500
+inet 192.168.35.11  netmask 255.255.255.0  broadcast 192.168.35.255
+inet6 fe80::a00:27ff:fe1d:36fb  prefixlen 64  scopeid 0x20&lt;link&gt;
+ether 08:00:27:1d:36:fb  txqueuelen 1000  (Ethernet)
+RX packets 35  bytes 6690 (6.6 KB)
+RX errors 0  dropped 0  overruns 0  frame 0
+TX packets 54  bytes 6707 (6.7 KB)
+TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+enp0s3: flags=4419&lt;UP,BROADCAST,RUNNING,PROMISC,MULTICAST&gt;  mtu 1500
+ether 08:00:27:1d:36:fb  txqueuelen 1000  (Ethernet)
+RX packets 885  bytes 103446 (103.4 KB)
+RX errors 0  dropped 1  overruns 0  frame 0
+TX packets 1078  bytes 99097 (99.0 KB)
+TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+lo: flags=73&lt;UP,LOOPBACK,RUNNING&gt;  mtu 65536
+inet 127.0.0.1  netmask 255.0.0.0
+inet6 ::1  prefixlen 128  scopeid 0x10&lt;host&gt;
+loop  txqueuelen 1000  (Local Loopback)
+RX packets 297  bytes 24639 (24.6 KB)
+RX errors 0  dropped 0  overruns 0  frame 0
+TX packets 297  bytes 24639 (24.6 KB)
+TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+</code></pre>
+<p>此时网桥已经得到了 IP，并且能够连接网络的网卡 enp0s3 也加入了网桥.</p>
+<p>接着创建一个 TAP 设备，作为 QEMU 一端的接口：</p>
+<pre><code>root@ibm:/# tunctl -t tap0 -u root    # 创建一个 tap0 接口，只允许 root 用户访问
+Set &#39;tap0&#39; persistent and owned by uid 0
+root@ibm:/# brctl addif br0 tap0     # 在虚拟网桥中增加一个 tap0 接口
+root@ibm:/# ifconfig tap0 0.0.0.0 promisc up    # 启用 tap0 接口
+root@ibm:/# brctl showstp br0        # 显示 br0 的各个接口
+</code></pre>
+<p>结果：</p>
+<pre><code>br0
+ bridge id        8000.0800271d36fb
+ designated root    8000.0800271d36fb
+ root port           0            path cost           0
+ max age          20.00            bridge max age          20.00
+ hello time           1.00            bridge hello time       1.00
+ forward delay           1.00            bridge forward delay       1.00
+ ageing time         300.00
+ hello timer           0.00            tcn timer           0.00
+ topology change timer       0.00            gc timer          84.97
+ flags            
+
+
+enp0s3 (1)
+ port id        8001            state         forwarding
+ designated root    8000.0800271d36fb    path cost           4
+ designated bridge    8000.0800271d36fb    message age timer       0.00
+ designated port    8001            forward delay timer       0.00
+ designated cost       0            hold timer           0.00
+ flags            
+
+tap0 (2)
+ port id        8002            state           disabled
+ designated root    8000.0800271d36fb    path cost         100
+ designated bridge    8000.0800271d36fb    message age timer       0.00
+ designated port    8002            forward delay timer       0.00
+ designated cost       0            hold timer           0.00
+ flags            
+</code></pre>
+<p>网桥配置就完成。</p>
+<h2 id="编译uImage"><a href="#编译uImage" class="headerlink" title="编译uImage"></a>编译uImage</h2><pre><code>pwd
+/home/qemu-linux-kits/linux-4.17
+
+make LOADADDR=0x60003000 uImage -j4
+</code></pre>
+<p>结果：</p>
+<pre><code>  CHK include/config/kernel.release
+  CHK include/generated/uapi/linux/version.h
+  CHK include/generated/utsrelease.h
+  CHK scripts/mod/devicetable-offsets.h
+  CHK include/generated/bounds.h
+  CHK include/generated/timeconst.h
+  CHK include/generated/asm-offsets.h
+  CALLscripts/checksyscalls.sh
+  CHK include/generated/compile.h
+  CHK kernel/config_data.h
+  Kernel: arch/arm/boot/Image is ready
+  Kernel: arch/arm/boot/zImage is ready
+  UIMAGE  arch/arm/boot/uImage
+Image Name:   Linux-4.17.0
+Created:  Sun Dec  5 11:27:02 2021
+Image Type:   ARM Linux Kernel Image (uncompressed)
+Data Size:4071640 Bytes = 3976.21 KiB = 3.88 MiB
+Load Address: 60003000
+Entry Point:  60003000
+  Kernel: arch/arm/boot/uImage is ready
+</code></pre>
+<h2 id="主机TFTP工具安装"><a href="#主机TFTP工具安装" class="headerlink" title="主机TFTP工具安装"></a>主机TFTP工具安装</h2><pre><code>apt-get install tftp-hpa tftpd-hpa xinetd
+</code></pre>
+<p> 修改配置文件：/etc/default/tftpd-hpa</p>
+<pre><code>TFTP_USERNAME=&quot;tftp&quot;
+#TFTP_DIRECTORY=&quot;/srv/tftp&quot;
+TFTP_DIRECTORY=&quot;/home/qemu-linux-kits/trainning/tftpboot&quot;
+TFTP_ADDRESS=&quot;0.0.0.0:69&quot;
+#TFTP_OPTIONS=&quot;--secure&quot;
+TFTP_OPTIONS=&quot;-l -c -s&quot;
+</code></pre>
+<p>创建tftpboot目录</p>
+<pre><code>mkdir tftpboot
+chmod +rwx tftpboot
+/home/qemu-linux-kits/trainning/tftpboot
+</code></pre>
+<p>将必要的文件移到tftpboot</p>
+<pre><code>pwd
+/home/qemu-linux-kits/trainning/tftpboot
+ls
+u-boot  uImage  vexpress-v2p-ca9.dtb
+</code></pre>
+<p> 重启tftp服务</p>
+<pre><code>/etc/init.d/tftpd-hpa restart
+</code></pre>
+<h2 id="修改u-boot文件"><a href="#修改u-boot文件" class="headerlink" title="修改u-boot文件"></a>修改u-boot文件</h2><p>路径：include/configs/vexpress_common.h</p>
+<p>目的是让u-boot完成自动引导内核文件等</p>
+<pre><code>/*config qemu&#39; network&lt;Add by ibm &gt;*/ 
+#define CONFIG_BOOTCOMMAND \
+&quot;tftp 0x60003000 zImage;tftp 0x60500000 vexpress-v2p-ca9.dtb; \
+setenv bootargs &#39;root=/dev/mmcblk0 console=tty0&#39;; \
+bootm 0x60003000 - 0x60500000;&quot;
+
+#define CONFIG_IPADDR 192.168.35.12
+#define CONFIG_NETMASK 255.255.255.0
+#define CONFIG_SERVERIP 192.168.35.11
+</code></pre>
+<p> CONFIG_BOOTCOMMAND相当于如下的手动引导：</p>
+<pre><code>tftp 0x60003000 uImage
+tftp 0x60500000 vexpress-v2p-ca9.dtb
+setenv bootargs&#39;root=/dev/mmcblk0 console=tty0&#39;
+bootm 0x60003000 - 0x60500000
+</code></pre>
+<p>再编译u-boot</p>
+<p>编译后，启动qemu命令行</p>
+<blockquote>
+<p>qemu-system-arm -M vexpress-a9 -kernel u-boot -nographic -m 512M -net nic -net tap,ifname=tap0,script=no,downscript=no -sd /home/qemu-linux-kits/trainning/rootfs.ext3</p>
+</blockquote>
+<p>打印信息：</p>
+<pre><code>...
+   Loading Device Tree to 7fb20000, end 7fb267ed ... OK
+
+Starting kernel ...
+</code></pre>
+<p>然后就没有任何反应了，停在这里了…</p>
+<p>再修改include/configs/vexpress_common.h</p>
+<pre><code>#define CONFIG_BOOTCOMMAND \
+ 
+&quot;tftp 0x60003000 uImage;tftp 0x60500000 vexpress-v2p-ca9.dtb; \
+setenv bootargs &#39;root=/dev/mmcblk0 console=ttyAMA0&#39;; \
+bootm 0x60003000 - 0x60500000; &quot;
+</code></pre>
+<p>注意：console=ttyAMA0’ ，原来是：tty0</p>
+<p>再重新编译u-boot:</p>
+<pre><code>pwd
+/home/qemu-linux-kits/u-boot
+
+make vexpress_ca9x4_defconfig
+make -j4
+</code></pre>
+<p>将必要的文件移到tftpboot</p>
+<pre><code>pwd
+/home/qemu-linux-kits/trainning/tftpboot
+ls
+u-boot  uImage  vexpress-v2p-ca9.dtb
+</code></pre>
+<p>再次启动，启动脚本如下：</p>
+<blockquote>
+<p>qemu-system-arm -M vexpress-a9 -kernel u-boot -nographic -m 512M -net nic -net tap,ifname=tap0,script=no,downscript=no -sd /home/qemu-linux-kits/trainning/rootfs.ext3</p>
+</blockquote>
+<p>打印信息如：</p>
+<pre><code>...
+
+Freeing unused kernel memory: 1024K
+random: crng init done
+-----------------------------------
+ welcome to A9 vexpress board
+-----------------------------------
+
+Please press Enter to activate this console. 
+ibm@arm-vexpress:/ # ls
+bin lib procsysfs   tmpfs
+dev linuxrc sbintest_ko usr
+etc lost+found  sys tmp var
+ibm@arm-vexpress:/ # 
+</code></pre>
+<h1 id="结束语："><a href="#结束语：" class="headerlink" title="结束语："></a>结束语：</h1><p>本次实操到此结束，遇到的问题基本也都详细记录下来了，希望对看到本笔记的人能有帮助。当然，如果你使用的系统、工具等版本与本笔记不同时，也可能会遇到其他意想不到的警告或错误！真的如此咋办，保持耐心 ，借助互联网一定能解决，要相信自己！</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/ARM/" rel="tag"># ARM</a>
+              <a href="/tags/Linux/" rel="tag"># Linux</a>
+              <a href="/tags/qemu/" rel="tag"># qemu</a>
+              <a href="/tags/u-boot/" rel="tag"># u-boot</a>
+              <a href="/tags/virtualBOX/" rel="tag"># virtualBOX</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/11/22/%E5%9F%BA%E4%BA%8Ewindows10%E7%B3%BB%E7%BB%9F%E7%94%A8QEMU%E6%A8%A1%E6%8B%9F%E6%A0%91%E8%8E%93%E6%B4%BE/" rel="prev" title="基于windows10系统用QEMU模拟树莓派">
+      <i class="fa fa-chevron-left"></i> 基于windows10系统用QEMU模拟树莓派
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AF%B4%E6%98%8E%EF%BC%9A"><span class="nav-number">1.</span> <span class="nav-text">说明：</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%8E%AF%E5%A2%83%E5%87%86%E5%A4%87%EF%BC%9A"><span class="nav-number"></span> <span class="nav-text">环境准备：</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%9D%90%E6%96%99%E5%87%86%E5%A4%87%EF%BC%9A"><span class="nav-number"></span> <span class="nav-text">材料准备：</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85-vim"><span class="nav-number">1.</span> <span class="nav-text">安装 vim</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#git%E5%AE%89%E8%A3%85%EF%BC%9A"><span class="nav-number">2.</span> <span class="nav-text">git安装：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#make%E5%AE%89%E8%A3%85%EF%BC%9A"><span class="nav-number">3.</span> <span class="nav-text">make安装：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85ARM-Linux-GCC%E5%B7%A5%E5%85%B7%E9%93%BE"><span class="nav-number">4.</span> <span class="nav-text">安装ARM-Linux-GCC工具链</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85uboot%E5%B7%A5%E5%85%B7"><span class="nav-number">5.</span> <span class="nav-text">安装uboot工具</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85qume%E6%A8%A1%E6%8B%9F%E5%99%A8%EF%BC%9A"><span class="nav-number">6.</span> <span class="nav-text">安装qume模拟器：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#git%E4%B8%8B%E8%BD%BDlinux%E5%86%85%E6%A0%B8%E6%BA%90%E7%A0%81"><span class="nav-number">7.</span> <span class="nav-text">git下载linux内核源码</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#git%E4%B8%8B%E8%BD%BDu-boot%E6%BA%90%E7%A0%81%EF%BC%9A"><span class="nav-number">8.</span> <span class="nav-text">git下载u-boot源码：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#busybox%E7%BD%91%E7%AB%99%EF%BC%9A"><span class="nav-number">9.</span> <span class="nav-text">busybox网站：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#git%E4%B8%8B%E8%BD%BDbusybox%E6%BA%90%E7%A0%81%EF%BC%9A"><span class="nav-number">10.</span> <span class="nav-text">git下载busybox源码：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%87%E6%8D%A2%E5%88%B0%E7%A8%B3%E5%AE%9A%E7%89%88%E6%9C%AC%EF%BC%9A"><span class="nav-number">11.</span> <span class="nav-text">切换到稳定版本：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9B%B4%E6%96%B0%E6%BA%90%E7%A0%81%E5%88%B0%E6%9C%80%E6%96%B0%EF%BC%9A"><span class="nav-number">12.</span> <span class="nav-text">更新源码到最新：</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%BC%80%E5%A7%8B%E5%B7%A5%E4%BD%9C%EF%BC%9A"><span class="nav-number"></span> <span class="nav-text">开始工作：</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A7%A3%E5%8E%8Blinux%E5%86%85%E6%A0%B8"><span class="nav-number">1.</span> <span class="nav-text">解压linux内核</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B3%A8%EF%BC%9A"><span class="nav-number">2.</span> <span class="nav-text">注：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE%E5%AF%B9%E5%BA%94%E7%9A%84%E5%BC%80%E5%8F%91%E6%9D%BF"><span class="nav-number">3.</span> <span class="nav-text">配置对应的开发板</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%BC%96%E8%AF%91zImage%EF%BC%8Cmodule%E4%BB%A5%E5%8F%8Adtb%EF%BC%9A"><span class="nav-number"></span> <span class="nav-text">编译zImage，module以及dtb：</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#make-zImage"><span class="nav-number">1.</span> <span class="nav-text">make zImage</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#make-modules"><span class="nav-number">2.</span> <span class="nav-text">make modules</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#make-dtbs"><span class="nav-number">3.</span> <span class="nav-text">make dtbs</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#busybox%E5%88%B6%E4%BD%9C%E6%A0%B9%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F"><span class="nav-number"></span> <span class="nav-text">busybox制作根文件系统</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE"><span class="nav-number">1.</span> <span class="nav-text">配置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BC%96%E8%AF%91-amp-amp-%E5%AE%89%E8%A3%85"><span class="nav-number">2.</span> <span class="nav-text">编译 &amp;&amp; 安装</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#make"><span class="nav-number">3.</span> <span class="nav-text">make</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#make-install"><span class="nav-number">4.</span> <span class="nav-text">make install</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%88%B6%E4%BD%9C%E6%A0%B9%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F"><span class="nav-number"></span> <span class="nav-text">制作根文件系统</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%B6%E4%BD%9CSD%E6%A0%B9%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E9%95%9C%E5%83%8F"><span class="nav-number">1.</span> <span class="nav-text">制作SD根文件系统镜像</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%97%A0LCD%E5%90%AF%E5%8A%A8%EF%BC%9A"><span class="nav-number">2.</span> <span class="nav-text">无LCD启动：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%89LCD%E5%90%AF%E5%8A%A8%EF%BC%9A"><span class="nav-number">3.</span> <span class="nav-text">有LCD启动：</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%86%99%E6%B5%8B%E8%AF%95%E7%A8%8B%E5%BA%8F%EF%BC%9A"><span class="nav-number"></span> <span class="nav-text">写测试程序：</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9F%A5%E7%9C%8Bko%E6%96%87%E4%BB%B6%E7%B1%BB%E5%9E%8B%EF%BC%9A"><span class="nav-number">1.</span> <span class="nav-text">查看ko文件类型：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B5%8B%E8%AF%95KO%E6%96%87%E4%BB%B6%EF%BC%9A"><span class="nav-number">2.</span> <span class="nav-text">测试KO文件：</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%90%AF%E5%8A%A8%E5%BC%80%E5%8F%91%E6%9D%BF"><span class="nav-number"></span> <span class="nav-text">启动开发板</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%97%A0LCD%E5%90%AF%E5%8A%A8%EF%BC%9A-1"><span class="nav-number">1.</span> <span class="nav-text">无LCD启动：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%8E%B0%E5%9C%A8%E5%BC%80%E5%A7%8B%E4%BF%AE%E5%A4%8D%EF%BC%9A"><span class="nav-number">2.</span> <span class="nav-text">现在开始修复：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%9B%E5%BB%BAetc"><span class="nav-number">3.</span> <span class="nav-text">创建etc</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%9B%E5%BB%BAinittab"><span class="nav-number">4.</span> <span class="nav-text">创建inittab</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%9B%E5%BB%BAfstab"><span class="nav-number">5.</span> <span class="nav-text">创建fstab</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%9B%E5%BB%BAprofile"><span class="nav-number">6.</span> <span class="nav-text">创建profile</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%9B%E5%BB%BAinit-d-rcS"><span class="nav-number">7.</span> <span class="nav-text">创建init.d&#x2F;rcS</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%90%AF%E5%8A%A8%E5%BC%80%E5%8F%91%E6%9D%BF-1"><span class="nav-number">8.</span> <span class="nav-text">启动开发板</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%97%A0LCD%E5%90%AF%E5%8A%A8%EF%BC%9A-2"><span class="nav-number">9.</span> <span class="nav-text">无LCD启动：</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8u-boot%E5%8A%A0%E8%BD%BDlinux-kernel"><span class="nav-number"></span> <span class="nav-text">使用u-boot加载linux kernel</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%94%99%E8%AF%AF%EF%BC%9A"><span class="nav-number">1.</span> <span class="nav-text">错误：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BF%90%E8%A1%8Cu-boot"><span class="nav-number">2.</span> <span class="nav-text">运行u-boot</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%85%8D%E7%BD%AEQEMU%E7%9A%84%E7%BD%91%E7%BB%9C%E5%8A%9F%E8%83%BD"><span class="nav-number"></span> <span class="nav-text">配置QEMU的网络功能</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%BB%E6%9C%BA%E5%AE%89%E8%A3%85%E5%B7%A5%E5%85%B7%E5%8C%85%EF%BC%9A"><span class="nav-number">1.</span> <span class="nav-text">主机安装工具包：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%85%8D%E7%BD%91%E6%A1%A5%EF%BC%9A"><span class="nav-number">2.</span> <span class="nav-text">配网桥：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BC%96%E8%AF%91uImage"><span class="nav-number">3.</span> <span class="nav-text">编译uImage</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%BB%E6%9C%BATFTP%E5%B7%A5%E5%85%B7%E5%AE%89%E8%A3%85"><span class="nav-number">4.</span> <span class="nav-text">主机TFTP工具安装</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BF%AE%E6%94%B9u-boot%E6%96%87%E4%BB%B6"><span class="nav-number">5.</span> <span class="nav-text">修改u-boot文件</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%BB%93%E6%9D%9F%E8%AF%AD%EF%BC%9A"><span class="nav-number"></span> <span class="nav-text">结束语：</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Armoon"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Armoon</p>
+  <div class="site-description" itemprop="description">把酒长亭杯已空,行人车马各西东。 枫林不共斜阳去,自向荒郊寂寞红。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">30</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Armoon</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
